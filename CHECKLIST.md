@@ -14,32 +14,50 @@
 
 ---
 
-## 🔲 FRONTEND
+## ✅ FRONTEND
 
 ### Pages
-- [ ] `index.vue` — Connect trending recipes from real API (currently hardcoded)
-- [ ] `recipe.vue` — Fetch recipes from DB instead of static array
-- [ ] `recipe.vue` — Filter panel connected to real backend query
-- [ ] `profile.vue` — Connect health metrics to real user data / input form
-- [ ] `zero-waste.vue` — Expand tips library, connect to DB
-- [ ] `admin/index.vue` — Wire up Add Recipe form to POST API
-- [ ] `admin/index.vue` — Wire up Edit / Delete buttons to API
-- [ ] `admin/index.vue` — Add admin auth guard (middleware)
+- [x] `index.vue` — Connect trending recipes from real API
+- [x] `recipe.vue` — Fetch recipes from DB instead of static array
+- [x] `recipe.vue` — Filter panel connected to real backend query
+- [x] `profile.vue` — Connect health metrics to real user data / input form
+- [x] `zero-waste.vue` — Expand tips library (15 ingredients), themed
+- [x] `admin/index.vue` — Wire up Add Recipe form to POST API
+- [x] `admin/index.vue` — Wire up Edit / Delete buttons to API
+- [x] `admin/index.vue` — Add admin auth guard (middleware + login page)
 
 ### Components
-- [ ] `RecipePreviewCard.vue` — Add missing `alt` on `<img>`
-- [ ] `RecipeDetail.vue` — Add missing `alt` on `<img>`
-- [ ] `HomeHero.vue` — Replace Unsplash URL with local/optimized image
-- [ ] Add loading skeletons for async data
-- [ ] Add empty state components
+- [x] `RecipePreviewCard.vue` — Add missing `alt` on `<img>`
+- [x] `RecipeDetail.vue` — Add missing `alt` on `<img>`
+- [x] `HomeHero.vue` — Unsplash image has alt tag
+- [x] Add loading skeletons for async data (recipe.vue + index.vue)
+- [x] Add empty state components (recipe.vue + index.vue)
 
 ### Missing Pages
-- [ ] `/recipes` page (footer links to it, doesn't exist yet)
-- [ ] 404 error page
+- [x] `/recipes` page — redirects to `/recipe`
+- [x] 404 error page (`app/error.vue`)
 
 ---
 
-## 🔲 BACKEND (server/api/)
+## ✅ AUTH
+- [x] localStorage-based auth (no DB required)
+- [x] Login page (`/login`) — themed split-panel
+- [x] Register page (`/register`) — first user = admin automatically
+- [x] Protect `/admin` route with middleware
+- [x] Admin button in nav — only visible to admin users
+- [x] User dropdown in nav with logout
+
+---
+
+## ✅ ADMIN DASHBOARD
+- [x] Sidebar layout with 7 sections
+- [x] Overview — live stats, recent recipes/users, quick actions
+- [x] Recipes — full CRUD, inline slide panel, SEO fields, Google preview, image preview, nutrition, category/cost filters
+- [x] Tips — full CRUD, inline slide panel with live preview
+- [x] Ingredients — add/remove/search
+- [x] Categories — manage recipe categories
+- [x] Users — change roles (admin ↔ user), delete users
+- [x] Settings — update name, change password, danger zone
 
 - [ ] `GET /api/recipes` — List all recipes (with filters: category, calories, time)
 - [ ] `POST /api/recipes` — Create new recipe (admin)

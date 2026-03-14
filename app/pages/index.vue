@@ -1,20 +1,40 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+
 const router = useRouter()
+
+interface Recipe {
+  id: number
+  title: string
+  imageUrl: string | null
+  cookingTime: number | null
+  costLevel: string | null
+  isZeroWaste: boolean | null
+  nutrition: { calories: number; protein: number; carbs: number; fat: number } | null
+}
 
 const steps = [
   { number: '01', title: 'Profile Logic', description: 'Analyze BMI and activity for a macro-blueprint.', icon: 'i-heroicons-finger-print' },
   { number: '02', title: 'Smart Budget', description: 'Weekly limits and smart kitchen math.', icon: 'i-heroicons-adjustments-horizontal' },
-  { number: '03', title: 'Zero Waste', description: 'Use every last scrap in your pantry.', icon: 'i-heroicons-leaf' }
+  { number: '03', title: 'Zero Waste', description: 'Use every last scrap in your pantry.', icon: 'i-heroicons-leaf' },
 ]
 
-const trendingRecipes = [
-  { title: 'Avocado Seed Toast', image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=500', badgeText: 'Low Budget', badgeColor: 'emerald', calories: 320, time: 15, macros: [{ label: 'Kcal', value: '320' }, { label: 'Prot', value: '12g' }, { label: 'Fat', value: '18g' }] },
-  { title: 'Vibrant Berry Bowl', image: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?q=80&w=500', badgeText: 'High Fiber', badgeColor: 'blue', calories: 280, time: 10, macros: [{ label: 'Kcal', value: '280' }, { label: 'Prot', value: '6g' }, { label: 'Fat', value: '4g' }] },
-  { title: 'Green Power Stir', image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500', badgeText: 'Zero Waste', badgeColor: 'teal', calories: 210, time: 12, macros: [{ label: 'Kcal', value: '210' }, { label: 'Prot', value: '8g' }, { label: 'Fat', value: '5g' }] }
-]
+const { data: allRecipes } = await useFetch<Recipe[]>('/api/recipes')
 
-// Function to redirect to recipes page with filter open
+const trendingRecipes = computed(() =>
+  (allRecipes.value ?? []).slice(0, 3).map(r => ({
+    title: r.title,
+    image: r.imageUrl ?? 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500',
+    badgeText: r.isZeroWaste ? 'Zero Waste' : (r.costLevel ?? 'Healthy'),
+    badgeColor: r.isZeroWaste ? 'teal' : r.costLevel === 'Low' ? 'emerald' : 'blue',
+    macros: [
+      { label: 'Kcal', value: String(r.nutrition?.calories ?? '—') },
+      { label: 'Prot', value: r.nutrition ? r.nutrition.protein + 'g' : '—' },
+      { label: 'Fat', value: r.nutrition ? r.nutrition.fat + 'g' : '—' },
+    ],
+  }))
+)
+
 const openFiltersOnRecipes = () => {
   router.push({ path: '/recipe', query: { openFilter: 'true' } })
 }
@@ -52,12 +72,26 @@ const openFiltersOnRecipes = () => {
           <p class="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Curated for you</p>
           <h2 class="text-4xl font-black text-slate-900 tracking-tighter leading-none">Smart Picks.</h2>
         </div>
-        <UButton to="/recipes" variant="ghost" color="gray" class="text-[10px] font-black uppercase tracking-widest hover:text-emerald-600">
+        <UButton to="/recipe" variant="ghost" color="gray" class="text-[10px] font-black uppercase tracking-widest hover:text-emerald-600">
           View all 40+ Recipes
         </UButton>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10">
-        <RecipePreviewCard v-for="recipe in trendingRecipes" :key="recipe.title" v-bind="recipe" />
+        <template v-if="!allRecipes">
+          <div v-for="i in 3" :key="i" class="animate-pulse bg-white rounded-[2rem] p-4 border border-slate-100">
+            <div class="h-48 rounded-[1.5rem] bg-slate-100 mb-4" />
+            <div class="space-y-2 px-2">
+              <div class="h-4 bg-slate-100 rounded w-3/4" />
+              <div class="h-3 bg-slate-100 rounded w-1/2" />
+            </div>
+          </div>
+        </template>
+        <template v-else-if="trendingRecipes.length === 0">
+          <div class="col-span-3 text-center py-16">
+            <p class="text-slate-400 font-medium">No recipes yet. <NuxtLink to="/admin/recipes" class="text-emerald-500 font-bold">Add some from the dashboard.</NuxtLink></p>
+          </div>
+        </template>
+        <RecipePreviewCard v-else v-for="recipe in trendingRecipes" :key="recipe.title" v-bind="recipe" />
       </div>
     </section>
     

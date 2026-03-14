@@ -1,56 +1,87 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+
+interface Recipe {
+  id: number
+  title: string
+  imageUrl: string | null
+  cookingTime: number | null
+  costLevel: string | null
+  isZeroWaste: boolean | null
+  sustainabilityTip: string | null
+  instructions: string
+  nutrition: { calories: number; protein: number; carbs: number; fat: number } | null
+}
+
 const isFilterOpen = ref(false)
 const calorieLimit = ref(800)
 const selectedTime = ref('All')
-const selectedIngredients = ref([])
+const selectedIngredients = ref<string[]>([])
 const activeCategory = ref('All')
-
 const isDetailOpen = ref(false)
-const selectedRecipe = ref(null)
+const selectedRecipe = ref<Recipe | null>(null)
 
-const openRecipeDetail = (recipe) => {
+const categories = ['All', 'Zero Waste', 'High Protein', 'Budget Friendly', 'Quick Fix', 'Vegan']
+
+// Build query params reactively
+const queryParams = computed(() => {
+  const p: Record<string, string> = {}
+  if (activeCategory.value !== 'All') p.category = activeCategory.value
+  if (calorieLimit.value < 800) p.maxCalories = String(calorieLimit.value)
+  if (selectedTime.value !== 'All') p.maxTime = selectedTime.value
+  return p
+})
+
+const { data: recipes, refresh } = await useFetch<Recipe[]>('/api/recipes', {
+  query: queryParams,
+})
+
+// Client-side ingredient filter (no DB column for ingredients yet)
+const filteredRecipes = computed(() => {
+  if (!recipes.value) return []
+  if (selectedIngredients.value.length === 0) return recipes.value
+  return recipes.value.filter(r =>
+    selectedIngredients.value.some(ing =>
+      r.title.toLowerCase().includes(ing.toLowerCase()) ||
+      r.sustainabilityTip?.toLowerCase().includes(ing.toLowerCase())
+    )
+  )
+})
+
+function openRecipeDetail(recipe: Recipe) {
   selectedRecipe.value = recipe
   isDetailOpen.value = true
 }
 
-const categories = ['All', 'Zero Waste', 'High Protein', 'Budget Friendly', 'Quick Fix', 'Vegan']
-
-const recipes = [
-  { title: 'Summer Berry Mix', image: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=600', tag: 'High Protein', calories: 240, time: 10, category: 'High Protein', protein: '12g', carbs: '30g', fats: '5g', ingredients: ['Berry'], instructions: ['Wash berries', 'Add yogurt'], hack: 'Freeze berries' },
-  { title: 'Green Pesto Pasta', image: 'https://images.unsplash.com/photo-1473093226795-af9932fe5856?w=600', tag: 'Zero Waste', calories: 410, time: 15, category: 'Zero Waste', protein: '15g', carbs: '55g', fats: '18g', ingredients: ['Pasta', 'Basil'], instructions: ['Boil pasta'], hack: 'Use pasta water' },
-  { title: 'Crispy Tofu Salad', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600', tag: 'Quick Fix', calories: 180, time: 12, category: 'Quick Fix', protein: '18g', carbs: '10g', fats: '8g', ingredients: ['Tofu', 'Spinach'], instructions: ['Fry tofu'], hack: 'Water plants with tofu water' },
-  { title: 'Egg & Avocado', image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600', tag: 'Budget Friendly', calories: 320, time: 8, category: 'Budget Friendly', protein: '14g', carbs: '15g', fats: '22g', ingredients: ['Avocado', 'Egg'], instructions: ['Mash avocado'], hack: 'Grow avocado tree' },
-  { title: 'Roasted Chickpeas', image: 'https://images.unsplash.com/photo-1515544824820-29b635ace304?w=600', tag: 'Vegan', calories: 150, time: 20, category: 'Vegan', protein: '9g', carbs: '25g', fats: '4g', ingredients: ['Chickpeas'], instructions: ['Roast chickpeas'], hack: 'Aquafaba meringue' },
-  { title: 'Salmon Quinoa', image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600', tag: 'High Protein', calories: 520, time: 25, category: 'High Protein', protein: '35g', carbs: '45g', fats: '20g', ingredients: ['Salmon'], instructions: ['Cook salmon'], hack: 'Fry salmon skin' }
-]
-
-// Open filter if coming from index
-onMounted(() => {
-  if (route.query.openFilter === 'true') {
-    isFilterOpen.value = true
-  }
-})
-
-// Combined Filter Logic
-const filteredRecipes = computed(() => {
-  return recipes.filter(r => {
-    const catMatch = activeCategory.value === 'All' || r.category === activeCategory.value
-    const calMatch = r.calories <= calorieLimit.value
-    const timeMatch = selectedTime.value === 'All' || r.time <= parseInt(selectedTime.value)
-    const ingMatch = selectedIngredients.value.length === 0 || selectedIngredients.value.some(ing => r.ingredients.includes(ing))
-    return catMatch && calMatch && timeMatch && ingMatch
-  })
-})
-
-const toggleIngredient = (ing) => {
+function toggleIngredient(ing: string) {
   const index = selectedIngredients.value.indexOf(ing)
   if (index > -1) selectedIngredients.value.splice(index, 1)
   else selectedIngredients.value.push(ing)
 }
+
+onMounted(() => {
+  if (route.query.openFilter === 'true') isFilterOpen.value = true
+})
+
+// Map recipe to RecipeDetail shape
+const detailRecipe = computed(() => {
+  if (!selectedRecipe.value) return null
+  const r = selectedRecipe.value
+  return {
+    title: r.title,
+    image: r.imageUrl ?? 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500',
+    category: r.costLevel ?? 'Healthy',
+    protein: r.nutrition ? r.nutrition.protein + 'g' : '0g',
+    carbs: r.nutrition ? r.nutrition.carbs + 'g' : '0g',
+    fats: r.nutrition ? r.nutrition.fat + 'g' : '0g',
+    ingredients: [] as string[],
+    instructions: r.instructions ? r.instructions.split('\n').filter(Boolean) : [],
+    hack: r.sustainabilityTip ?? undefined,
+  }
+})
 </script>
 
 <template>
@@ -124,23 +155,41 @@ const toggleIngredient = (ing) => {
     </div>
 
     <section class="max-w-7xl mx-auto px-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      <!-- Loading skeletons -->
+      <div v-if="!recipes" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        <div v-for="i in 8" :key="i" class="animate-pulse">
+          <div class="aspect-square rounded-[2.5rem] bg-slate-100 mb-5" />
+          <div class="px-2 space-y-2">
+            <div class="h-4 bg-slate-100 rounded-lg w-3/4" />
+            <div class="h-3 bg-slate-100 rounded-lg w-1/2" />
+          </div>
+        </div>
+      </div>
+      <!-- Empty state -->
+      <div v-else-if="filteredRecipes.length === 0" class="text-center py-32">
+        <div class="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center mx-auto mb-6">
+          <UIcon name="i-heroicons-magnifying-glass" class="w-10 h-10 text-emerald-300" />
+        </div>
+        <p class="text-slate-400 font-semibold text-lg">No recipes match your filters.</p>
+        <button class="mt-4 text-emerald-500 font-black text-sm hover:underline" @click="activeCategory = 'All'; calorieLimit = 800; selectedTime = 'All'">Clear filters</button>
+      </div>
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         <div v-for="(recipe, index) in filteredRecipes" :key="index" class="group animate-reveal cursor-pointer" @click="openRecipeDetail(recipe)">
           <div class="relative aspect-square rounded-[2.5rem] overflow-hidden mb-5 shadow-sm group-hover:shadow-2xl transition-all duration-500 border-4 border-white">
-            <img :src="recipe.image" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <img :src="recipe.imageUrl ?? 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500'" :alt="recipe.title" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
           </div>
           <div class="px-2 space-y-2">
             <h3 class="text-base font-black text-slate-900 truncate group-hover:text-emerald-500">{{ recipe.title }}</h3>
             <div class="flex items-center gap-3">
-              <span class="text-[9px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md">{{ recipe.calories }} kcal</span>
-              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ recipe.time }} min</span>
+              <span class="text-[9px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md">{{ recipe.nutrition?.calories ?? '—' }} kcal</span>
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ recipe.cookingTime ? recipe.cookingTime + ' min' : '—' }}</span>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <RecipeDetail v-if="selectedRecipe" :is-open="isDetailOpen" :recipe="selectedRecipe" @close="isDetailOpen = false" />
+    <RecipeDetail v-if="detailRecipe" :is-open="isDetailOpen" :recipe="detailRecipe" @close="isDetailOpen = false" />
   </main>
 </template>
 

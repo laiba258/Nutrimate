@@ -9,7 +9,7 @@
         </button>
 
         <div class="relative h-[40vh] w-full">
-          <img :src="recipe.image" class="w-full h-full object-cover">
+          <img :src="recipe.image" :alt="recipe.title" class="w-full h-full object-cover">
           <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"/>
         </div>
 

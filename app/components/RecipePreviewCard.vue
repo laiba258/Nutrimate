@@ -1,7 +1,7 @@
 <template>
   <div class="group relative bg-white rounded-[2rem] p-4 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500">
     <div class="relative h-48 w-full overflow-hidden rounded-[1.5rem] mb-4">
-      <img :src="image" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" >
+      <img :src="image" :alt="title" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110">
       <div class="absolute top-3 right-3">
         <UBadge :color="badgeColor" variant="solid" class="rounded-full px-3 py-1 text-[10px] font-bold shadow-lg">
           {{ badgeText }}

@@ -1,112 +1,118 @@
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+definePageMeta({ middleware: 'admin', layout: 'admin' })
 
-const isModalOpen = ref(false)
+const { getUsers } = useAuth()
 
-const stats = [
-  { label: 'Total Recipes', value: '24', icon: 'i-heroicons-book-open', color: 'emerald' },
-  { label: 'Active Users', value: '1.2k', icon: 'i-heroicons-users', color: 'blue' },
-  { label: 'Zero Waste Tips', value: '15', icon: 'i-heroicons-leaf', color: 'teal' },
-  { label: 'Avg. Budget', value: 'Rs. 450', icon: 'i-heroicons-banknotes', color: 'orange' }
-]
+// Local recipe store
+const getRecipes = () => JSON.parse(localStorage.getItem('nutrimate_recipes') || '[]')
 
-const columns = [
-  { key: 'title', label: 'Title' },
-  { key: 'costLevel', label: 'Cost' },
-  { key: 'calories', label: 'Calories' },
-  { key: 'actions', label: 'Actions' }
-]
+const recipes = ref(getRecipes())
+const users = ref(getUsers())
 
-const recipes = [
-  { title: 'Quinoa Salad', costLevel: 'Low', calories: '320' },
-  { title: 'Beef Stir Fry', costLevel: 'Medium', calories: '540' },
-]
+const stats = computed(() => [
+  { label: 'Total Recipes', value: recipes.value.length, icon: 'i-heroicons-book-open', color: 'emerald', change: '+3 this week' },
+  { label: 'Registered Users', value: users.value.length, icon: 'i-heroicons-users', color: 'blue', change: 'All time' },
+  { label: 'Zero Waste', value: recipes.value.filter((r: any) => r.isZeroWaste).length, icon: 'i-heroicons-leaf', color: 'teal', change: 'Recipes tagged' },
+  { label: 'Low Budget', value: recipes.value.filter((r: any) => r.costLevel === 'Low').length, icon: 'i-heroicons-banknotes', color: 'orange', change: 'Affordable picks' },
+])
+
+const recentRecipes = computed(() => [...recipes.value].reverse().slice(0, 5))
+const recentUsers = computed(() => [...users.value].reverse().slice(0, 5))
 </script>
+
 <template>
   <div class="space-y-8">
-    <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-      <div>
-        <h1 class="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
-        <p class="text-slate-500 text-sm">Manage your smart recipe database</p>
+    <!-- Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+      <div
+        v-for="stat in stats"
+        :key="stat.label"
+        class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
+      >
+        <div class="flex items-start justify-between mb-4">
+          <div class="p-2.5 rounded-xl bg-emerald-50">
+            <UIcon :name="stat.icon" class="w-5 h-5 text-emerald-500" />
+          </div>
+          <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">{{ stat.change }}</span>
+        </div>
+        <p class="text-3xl font-black text-slate-900">{{ stat.value }}</p>
+        <p class="text-xs text-slate-400 font-semibold mt-1 uppercase tracking-wider">{{ stat.label }}</p>
       </div>
-      <UButton 
-        icon="i-heroicons-plus" 
-        size="md" 
-        color="emerald" 
-        label="Add New Recipe" 
-        @click="isModalOpen = true"
-      />
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <UCard v-for="stat in stats" :key="stat.label" class="border-none shadow-sm">
-        <div class="flex items-center gap-4">
-          <div :class="`p-3 rounded-xl bg-${stat.color}-50`">
-            <UIcon :name="stat.icon" :class="`w-6 h-6 text-${stat.color}-500`" />
-          </div>
-          <div>
-            <p class="text-xs text-slate-500 uppercase font-semibold tracking-wider">{{ stat.label }}</p>
-            <p class="text-xl font-bold">{{ stat.value }}</p>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <!-- Recent Recipes -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
+          <h3 class="font-black text-slate-900 tracking-tighter">Recent Recipes</h3>
+          <UButton to="/admin/recipes" variant="ghost" color="gray" size="xs" label="View all" trailing-icon="i-heroicons-arrow-right" />
+        </div>
+        <div v-if="recentRecipes.length" class="divide-y divide-slate-50">
+          <div v-for="r in recentRecipes" :key="r.id" class="px-6 py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+              <UIcon name="i-heroicons-book-open" class="w-5 h-5 text-emerald-500" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-slate-800 text-sm truncate">{{ r.title }}</p>
+              <p class="text-xs text-slate-400">{{ r.costLevel ?? '—' }} · {{ r.cookingTime ? r.cookingTime + ' min' : '—' }}</p>
+            </div>
+            <UBadge :color="r.isZeroWaste ? 'teal' : 'slate'" variant="subtle" size="xs">
+              {{ r.isZeroWaste ? 'Zero Waste' : r.costLevel ?? '—' }}
+            </UBadge>
           </div>
         </div>
-      </UCard>
+        <div v-else class="px-6 py-12 text-center">
+          <UIcon name="i-heroicons-book-open" class="w-10 h-10 text-slate-200 mx-auto mb-2" />
+          <p class="text-sm text-slate-400">No recipes yet. <NuxtLink to="/admin/recipes" class="text-emerald-500 font-bold">Add one</NuxtLink></p>
+        </div>
+      </div>
+
+      <!-- Recent Users -->
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
+          <h3 class="font-black text-slate-900 tracking-tighter">Recent Users</h3>
+          <UButton to="/admin/users" variant="ghost" color="gray" size="xs" label="View all" trailing-icon="i-heroicons-arrow-right" />
+        </div>
+        <div v-if="recentUsers.length" class="divide-y divide-slate-50">
+          <div v-for="u in recentUsers" :key="u.id" class="px-6 py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
+            <div class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-black text-sm shrink-0">
+              {{ u.name?.charAt(0).toUpperCase() }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-slate-800 text-sm truncate">{{ u.name }}</p>
+              <p class="text-xs text-slate-400 truncate">{{ u.email }}</p>
+            </div>
+            <UBadge :color="u.role === 'admin' ? 'emerald' : 'slate'" variant="subtle" size="xs">
+              {{ u.role }}
+            </UBadge>
+          </div>
+        </div>
+        <div v-else class="px-6 py-12 text-center">
+          <p class="text-sm text-slate-400">No users yet.</p>
+        </div>
+      </div>
     </div>
 
-    <UCard class="border-none shadow-sm overflow-hidden">
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h3 class="font-bold">Recent Recipes</h3>
-          <UInput icon="i-heroicons-magnifying-glass" placeholder="Search recipes..." />
-        </div>
-      </template>
-
-      <UTable :rows="recipes" :columns="columns">
-        <template #costLevel-data="{ row }">
-          <UBadge :color="row.costLevel === 'Low' ? 'emerald' : 'orange'" variant="subtle">
-            {{ row.costLevel }}
-          </UBadge>
-        </template>
-        <template #actions-data="{ row }">
-          <UButton color="gray" variant="ghost" icon="i-heroicons-pencil-square" />
-          <UButton color="red" variant="ghost" icon="i-heroicons-trash" />
-        </template>
-      </UTable>
-    </UCard>
-
-    <UModal v-model="isModalOpen">
-      <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h3 class="text-base font-semibold leading-6 text-gray-900">Add New Recipe</h3>
-            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark" @click="isModalOpen = false" />
-          </div>
-        </template>
-
-        <div class="p-4 space-y-4">
-          <UFormGroup label="Recipe Title">
-            <UInput placeholder="e.g. Healthy Chicken Karahi" />
-          </UFormGroup>
-          <div class="grid grid-cols-2 gap-4">
-            <UFormGroup label="Calories">
-              <UInput type="number" placeholder="450" />
-            </UFormGroup>
-            <UFormGroup label="Cost Level">
-              <USelect :options="['Low', 'Medium', 'High']" />
-            </UFormGroup>
-          </div>
-          <UFormGroup label="Zero Waste Tip">
-            <UTextarea placeholder="How to use leftovers..." />
-          </UFormGroup>
-        </div>
-
-        <template #footer>
-          <div class="flex justify-end gap-3">
-            <UButton color="gray" variant="ghost" label="Cancel" @click="isModalOpen = false" />
-            <UButton color="emerald" label="Save Recipe" />
-          </div>
-        </template>
-      </UCard>
-    </UModal>
+    <!-- Quick actions -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+      <h3 class="font-black text-slate-900 tracking-tighter mb-5">Quick Actions</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <NuxtLink
+          v-for="action in [
+            { label: 'Add Recipe', icon: 'i-heroicons-plus-circle', to: '/admin/recipes?add=true', color: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' },
+            { label: 'Manage Users', icon: 'i-heroicons-users', to: '/admin/users', color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
+            { label: 'Add Tip', icon: 'i-heroicons-light-bulb', to: '/admin/tips?add=true', color: 'bg-teal-50 text-teal-600 hover:bg-teal-100' },
+            { label: 'Settings', icon: 'i-heroicons-cog-6-tooth', to: '/admin/settings', color: 'bg-slate-50 text-slate-600 hover:bg-slate-100' },
+          ]"
+          :key="action.label"
+          :to="action.to"
+          class="flex flex-col items-center gap-3 p-5 rounded-2xl transition-all text-center"
+          :class="action.color"
+        >
+          <UIcon :name="action.icon" class="w-7 h-7" />
+          <span class="text-xs font-black uppercase tracking-wider">{{ action.label }}</span>
+        </NuxtLink>
+      </div>
+    </div>
   </div>
 </template>
-
