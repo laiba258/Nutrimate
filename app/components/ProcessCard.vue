@@ -51,8 +51,5 @@ defineProps<{
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,700&display=swap');
-
-.font-serif {
-  font-family: 'Cormorant+Garamond', serif;
-}
+.font-serif { font-family: 'Cormorant+Garamond', serif; }
 </style>

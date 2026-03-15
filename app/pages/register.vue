@@ -46,11 +46,11 @@ async function submit() {
           Start your<br><span class="text-emerald-400 italic font-serif font-light">journey.</span>
         </h2>
         <p class="text-slate-400 text-sm leading-relaxed max-w-xs">
-          First person to register becomes the admin. No setup needed.
+          Join thousands of users eating smarter, wasting less, and feeling better every day.
         </p>
         <div class="flex items-center gap-3 bg-white/5 rounded-2xl px-4 py-3 border border-white/10">
           <UIcon name="i-heroicons-shield-check" class="w-5 h-5 text-emerald-400 shrink-0" />
-          <p class="text-xs text-slate-300">First registered account gets full admin access automatically.</p>
+          <p class="text-xs text-slate-300">Your data is private and secure. No spam, ever.</p>
         </div>
       </div>
       <p class="text-slate-600 text-xs relative z-10">© 2026 NutriMate. All rights reserved.</p>

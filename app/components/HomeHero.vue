@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Pure Nuxt / Vue logic - Modern & Fast
 </script>
 
 <template>

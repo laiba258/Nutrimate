@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -13,6 +13,7 @@ interface Recipe {
   isZeroWaste: boolean | null
   sustainabilityTip: string | null
   instructions: string
+  ingredients: string | null
   nutrition: { calories: number; protein: number; carbs: number; fat: number } | null
 }
 
@@ -26,7 +27,6 @@ const selectedRecipe = ref<Recipe | null>(null)
 
 const categories = ['All', 'Zero Waste', 'High Protein', 'Budget Friendly', 'Quick Fix', 'Vegan']
 
-// Build query params reactively
 const queryParams = computed(() => {
   const p: Record<string, string> = {}
   if (activeCategory.value !== 'All') p.category = activeCategory.value
@@ -35,12 +35,11 @@ const queryParams = computed(() => {
   return p
 })
 
-const { data: recipes, refresh } = await useFetch<Recipe[]>('/api/recipes', {
+const { data: recipes } = await useFetch<Recipe[]>('/api/recipes', {
   lazy: true,
   query: queryParams,
 })
 
-// Client-side ingredient filter (no DB column for ingredients yet)
 const filteredRecipes = computed(() => {
   if (!recipes.value) return []
   if (selectedIngredients.value.length === 0) return recipes.value
@@ -67,10 +66,12 @@ onMounted(() => {
   if (route.query.openFilter === 'true') isFilterOpen.value = true
 })
 
-// Map recipe to RecipeDetail shape
 const detailRecipe = computed(() => {
   if (!selectedRecipe.value) return null
   const r = selectedRecipe.value
+  const ingredientList = r.ingredients
+    ? r.ingredients.split(',').map(s => s.trim()).filter(Boolean)
+    : []
   return {
     title: r.title,
     image: r.imageUrl ?? 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500',
@@ -78,7 +79,7 @@ const detailRecipe = computed(() => {
     protein: r.nutrition ? r.nutrition.protein + 'g' : '0g',
     carbs: r.nutrition ? r.nutrition.carbs + 'g' : '0g',
     fats: r.nutrition ? r.nutrition.fat + 'g' : '0g',
-    ingredients: [] as string[],
+    ingredients: ingredientList,
     instructions: r.instructions ? r.instructions.split('\n').filter(Boolean) : [],
     hack: r.sustainabilityTip ?? undefined,
   }
@@ -87,13 +88,14 @@ const detailRecipe = computed(() => {
 
 <template>
   <main class="bg-[#FCFCFC] min-h-screen pb-32 relative">
-    
+
+    <!-- Filter Panel -->
     <Transition name="slide-fade">
       <div v-if="isFilterOpen" class="fixed inset-0 z-[100] flex justify-end">
         <div class="absolute inset-0 bg-slate-900/30 backdrop-blur-sm" @click="isFilterOpen = false" />
         <div class="relative w-full max-w-sm bg-white h-screen shadow-2xl flex flex-col border-l border-slate-100">
           <div class="p-8 border-b border-slate-50 flex items-center justify-between bg-white sticky top-0 z-10">
-            <h3 class="text-2xl font-black text-slate-900 tracking-tighter">Filter Logic.</h3>
+            <h3 class="text-2xl font-black text-slate-900 tracking-tighter">Filter Recipes.</h3>
             <button class="w-10 h-10 flex bg-slate-50 hover:bg-emerald-500 hover:text-white rounded-full transition-all items-center justify-center" @click="isFilterOpen = false">
               <UIcon name="i-lucide-x" class="w-5 h-5" />
             </button>
@@ -111,7 +113,10 @@ const detailRecipe = computed(() => {
             <div class="space-y-4">
               <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Preparation Time</p>
               <div class="grid grid-cols-2 gap-2">
-                <button v-for="t in ['All', '10', '20', '30']" :key="t" :class="[selectedTime === t ? 'bg-slate-900 text-white shadow-xl' : 'bg-white border text-slate-500']" class="py-3 rounded-2xl text-[10px] font-black uppercase transition-all" @click="selectedTime = t">
+                <button v-for="t in ['All', '10', '20', '30']" :key="t"
+                  :class="[selectedTime === t ? 'bg-slate-900 text-white shadow-xl' : 'bg-white border text-slate-500']"
+                  class="py-3 rounded-2xl text-[10px] font-black uppercase transition-all"
+                  @click="selectedTime = t">
                   {{ t === 'All' ? 'Any Time' : t + ' min' }}
                 </button>
               </div>
@@ -120,7 +125,10 @@ const detailRecipe = computed(() => {
             <div class="space-y-4">
               <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Key Ingredients</p>
               <div class="flex flex-wrap gap-2">
-                <button v-for="ing in ['Avocado', 'Berry', 'Spinach', 'Tofu', 'Salmon', 'Pasta']" :key="ing" :class="[selectedIngredients.includes(ing) ? 'bg-emerald-500 text-white' : 'bg-white border']" class="px-4 py-2 rounded-full text-[10px] font-bold transition-all" @click="toggleIngredient(ing)">
+                <button v-for="ing in ['Avocado', 'Spinach', 'Chicken', 'Pasta', 'Salmon', 'Lentils']" :key="ing"
+                  :class="[selectedIngredients.includes(ing) ? 'bg-emerald-500 text-white' : 'bg-white border']"
+                  class="px-4 py-2 rounded-full text-[10px] font-bold transition-all"
+                  @click="toggleIngredient(ing)">
                   {{ ing }}
                 </button>
               </div>
@@ -136,27 +144,37 @@ const detailRecipe = computed(() => {
       </div>
     </Transition>
 
+    <!-- Page Header -->
     <header class="relative pt-32 pb-20 px-6 overflow-hidden text-center">
-      <div class="absolute top-0 right-0 w-[40vw] h-[40vw] bg-emerald-50/50 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4"/>
+      <div class="absolute top-0 right-0 w-[40vw] h-[40vw] bg-emerald-50/50 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
       <div class="max-w-7xl mx-auto space-y-6 relative z-10">
+        <p class="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Explore the Collection</p>
         <h1 class="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter leading-[0.85]">
-          Discover <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400 font-serif italic font-light lowercase">delicious logic.</span>
+          Discover <br>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400 font-serif italic font-light lowercase">delicious logic.</span>
         </h1>
       </div>
     </header>
 
-    <div class="sticky top-0 z-40 bg-[#FCFCFC]/60 backdrop-blur-xl border-y border-slate-100 py-4 mb-12">
-      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+    <!-- Category Filter Bar -->
+    <div class="sticky top-0 z-40 bg-[#FCFCFC]/80 backdrop-blur-xl border-y border-slate-100 py-4 mb-12">
+      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto">
-          <button v-for="cat in categories" :key="cat" :class="[activeCategory === cat ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:bg-emerald-50']" class="whitespace-nowrap px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all" @click="activeCategory = cat">
+          <button v-for="cat in categories" :key="cat"
+            :class="[activeCategory === cat ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:bg-emerald-50']"
+            class="whitespace-nowrap px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all"
+            @click="activeCategory = cat">
             {{ cat }}
           </button>
         </div>
+        <button class="shrink-0 flex items-center gap-2 px-5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-500 hover:border-emerald-400 hover:text-emerald-600 transition-all" @click="isFilterOpen = true">
+          <UIcon name="i-heroicons-adjustments-horizontal" class="w-4 h-4" /> Filters
+        </button>
       </div>
     </div>
 
+    <!-- Recipe Grid -->
     <section class="max-w-7xl mx-auto px-6">
-      <!-- Loading skeletons -->
       <div v-if="!recipes" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         <div v-for="i in 8" :key="i" class="animate-pulse">
           <div class="aspect-square rounded-[2.5rem] bg-slate-100 mb-5" />
@@ -166,7 +184,7 @@ const detailRecipe = computed(() => {
           </div>
         </div>
       </div>
-      <!-- Empty state -->
+
       <div v-else-if="filteredRecipes.length === 0" class="text-center py-32">
         <div class="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center mx-auto mb-6">
           <UIcon name="i-heroicons-magnifying-glass" class="w-10 h-10 text-emerald-300" />
@@ -174,13 +192,15 @@ const detailRecipe = computed(() => {
         <p class="text-slate-400 font-semibold text-lg">No recipes match your filters.</p>
         <button class="mt-4 text-emerald-500 font-black text-sm hover:underline" @click="activeCategory = 'All'; calorieLimit = 800; selectedTime = 'All'">Clear filters</button>
       </div>
+
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         <div v-for="(recipe, index) in filteredRecipes" :key="index" class="group animate-reveal cursor-pointer" @click="openRecipeDetail(recipe)">
           <div class="relative aspect-square rounded-[2.5rem] overflow-hidden mb-5 shadow-sm group-hover:shadow-2xl transition-all duration-500 border-4 border-white">
             <img :src="recipe.imageUrl ?? 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500'" :alt="recipe.title" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+            <div v-if="recipe.isZeroWaste" class="absolute top-3 left-3 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full">Zero Waste</div>
           </div>
           <div class="px-2 space-y-2">
-            <h3 class="text-base font-black text-slate-900 truncate group-hover:text-emerald-500">{{ recipe.title }}</h3>
+            <h3 class="text-base font-black text-slate-900 truncate group-hover:text-emerald-500 transition-colors">{{ recipe.title }}</h3>
             <div class="flex items-center gap-3">
               <span class="text-[9px] font-black text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md">{{ recipe.nutrition?.calories ?? '—' }} kcal</span>
               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ recipe.cookingTime ? recipe.cookingTime + ' min' : '—' }}</span>

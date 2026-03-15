@@ -2,7 +2,7 @@ import { createHash, randomBytes } from 'crypto'
 import type { H3Event } from 'h3'
 import type { SessionUser } from '../types'
 
-// Simple SHA-256 hash (use bcrypt in production)
+// SHA-256 password hashing
 export function hashPassword(password: string): string {
     return createHash('sha256').update(password).digest('hex')
 }
