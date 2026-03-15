@@ -3,23 +3,23 @@
 </script>
 
 <template>
-  <section class="relative min-h-[90vh] flex items-center bg-white overflow-hidden pt-12">
+  <section class="relative min-h-screen lg:min-h-[90vh] flex items-center bg-white overflow-hidden pt-20 md:pt-12 pb-12">
     
     <div class="absolute inset-0 pointer-events-none">
       <div class="absolute top-[10%] right-[10%] w-80 h-80 bg-emerald-50/40 rounded-full blur-[120px] animate-pulse"/>
       <div class="absolute bottom-[10%] left-[5%] w-60 h-60 bg-orange-50/30 rounded-full blur-[100px]"/>
     </div>
 
-    <div class="max-w-7xl mx-auto px-8 w-full relative z-10">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
+    <div class="max-w-7xl mx-auto px-4 md:px-8 w-full relative z-10">
+      <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
         
-        <div class="space-y-8 lg:pr-10">
+        <div class="space-y-6 md:space-y-8 lg:pr-10">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 shadow-xl shadow-slate-200">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"/>
             <span class="text-[9px] font-black uppercase tracking-[0.3em] text-white">Feel Good Food</span>
           </div>
 
-          <h1 class="text-6xl md:text-7xl font-black text-slate-900 leading-[0.95] tracking-tighter">
+          <h1 class="text-5xl md:text-6xl lg:text-7xl font-black text-slate-900 leading-[0.95] tracking-tighter">
             Eat with <br> 
             <span class="text-[#10b981] italic font-serif font-light">Purpose.</span>
           </h1>
@@ -28,24 +28,24 @@
             NutriMate brings <span class="text-slate-900 font-bold">minimalist logic</span> to your kitchen. Macro-tracking that looks as good as it tastes.
           </p>
 
-          <div class="flex items-center gap-6 pt-4">
-            <button class="bg-[#10b981] hover:bg-[#059669] text-white px-9 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-[0_20px_40px_-10px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:scale-95">
+          <div class="flex items-center gap-4 md:gap-6 pt-2 md:pt-4">
+            <NuxtLink to="/register" class="bg-[#10b981] hover:bg-[#059669] text-white px-7 md:px-9 py-3 md:py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-[0_20px_40px_-10px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:scale-95">
               Get Started
-            </button>
+            </NuxtLink>
             
-            <button class="group flex items-center gap-3">
-              <div class="w-11 h-11 rounded-full border border-slate-100 flex items-center justify-center group-hover:bg-slate-50 transition-all shadow-sm">
-                <UIcon name="i-heroicons-play-20-solid" class="w-4 h-4 text-slate-900" />
+            <NuxtLink to="/recipe" class="group flex items-center gap-3">
+              <div class="w-10 h-10 md:w-11 md:h-11 rounded-full border border-slate-100 flex items-center justify-center group-hover:bg-slate-50 transition-all shadow-sm">
+                <UIcon name="i-heroicons-arrow-right-20-solid" class="w-4 h-4 text-slate-900" />
               </div>
-              <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-900 transition-colors">The Vibe</span>
-            </button>
+              <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-900 transition-colors">View Recipes</span>
+            </NuxtLink>
           </div>
         </div>
 
-        <div class="relative flex justify-center lg:justify-end pr-10">
+        <div class="relative flex justify-center lg:justify-end lg:pr-10 mt-4 lg:mt-0">
           
           <div class="relative group">
-            <div class="relative w-[300px] aspect-[3/4] rounded-[3.5rem] overflow-hidden shadow-2xl z-20 border-[6px] border-white">
+            <div class="relative w-[220px] md:w-[280px] lg:w-[300px] aspect-[3/4] rounded-[3.5rem] overflow-hidden shadow-2xl z-20 border-[6px] border-white">
               <img 
                 src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=800" 
                 class="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"

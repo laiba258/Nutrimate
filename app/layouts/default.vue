@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-slate-50 selection:bg-emerald-100">
     <AppHeader />
     
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
       <slot />
     </main>
 

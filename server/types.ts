@@ -1,30 +1,3 @@
-export interface RecipeRow {
-    id: number
-    title: string
-    description: string | null
-    instructions: string
-    imageUrl: string | null
-    cookingTime: number | null
-    costLevel: string | null
-    isZeroWaste: boolean | null
-    sustainabilityTip: string | null
-    createdAt: Date
-    updatedAt: Date
-}
-
-export interface NutritionRow {
-    id: number
-    recipeId: number | null
-    calories: number
-    protein: number
-    carbs: number
-    fat: number
-}
-
-export interface RecipeWithNutrition extends RecipeRow {
-    nutrition: NutritionRow | null
-}
-
 export interface CreateRecipeBody {
     title: string
     description?: string
@@ -32,10 +5,33 @@ export interface CreateRecipeBody {
     imageUrl?: string
     cookingTime?: number
     costLevel?: string
+    category?: string
     isZeroWaste?: boolean
     sustainabilityTip?: string
+    ingredients?: string
+    seoTitle?: string
+    seoDescription?: string
+    seoKeywords?: string
     calories?: number
     protein?: number
     carbs?: number
     fat?: number
+}
+
+export interface RegisterBody {
+    name: string
+    email: string
+    password: string
+}
+
+export interface LoginBody {
+    email: string
+    password: string
+}
+
+export interface SessionUser {
+    id: number
+    name: string
+    email: string
+    role: 'admin' | 'user'
 }

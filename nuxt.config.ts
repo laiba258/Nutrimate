@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/ui', '@nuxt/eslint'],
   css: ['~/assets/css/main.css'],
+  ssr: false,
   future: {
     compatibilityVersion: 4,
   },
@@ -18,5 +19,9 @@ export default defineNuxtConfig({
   },
   colorMode: {
     preference: 'light',
+  },
+  runtimeConfig: {
+    supabaseUrl: process.env.SUPABASE_URL || '',
+    supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
   },
 })

@@ -1,29 +1,33 @@
 <template>
-  <footer class="bg-slate-900 pt-20 pb-10 px-6 overflow-hidden relative mt-20">
-    <div class="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-emerald-500 to-teal-500"/>
+  <footer class="bg-slate-900 pt-16 md:pt-20 pb-10 px-4 md:px-6 overflow-hidden relative mt-16 md:mt-20">
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500"/>
     
-    <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12 relative z-10">
-      <div class="col-span-2 space-y-6">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-12 relative z-10">
+      <div class="sm:col-span-2 space-y-5">
         <div class="flex items-center gap-3 text-white">
           <div class="bg-emerald-500 p-2 rounded-lg">
-            <UIcon name="i-heroicons-sparkles" class="w-6 h-6" />
+            <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-white" />
           </div>
-          <span class="text-2xl font-black tracking-tighter">NUTRIMATE</span>
+          <span class="text-xl font-black tracking-tighter">NUTRIMATE</span>
         </div>
-        <p class="text-slate-400 max-w-sm leading-relaxed text-lg">
+        <p class="text-slate-400 max-w-sm leading-relaxed text-sm">
           Revolutionizing how students and families approach nutrition. Sustainability in every bite, health in every meal.
         </p>
-        <div class="flex gap-4">
-          <UButton color="white" variant="ghost" icon="i-heroicons-envelope" class="rounded-full bg-white/5" />
-          <UButton color="white" variant="ghost" icon="i-heroicons-camera" class="rounded-full bg-white/5" />
+        <div class="flex gap-3">
+          <a href="#" class="w-9 h-9 rounded-full bg-white/5 hover:bg-emerald-500/20 flex items-center justify-center transition-all">
+            <UIcon name="i-heroicons-envelope" class="w-4 h-4 text-slate-400" />
+          </a>
+          <a href="#" class="w-9 h-9 rounded-full bg-white/5 hover:bg-emerald-500/20 flex items-center justify-center transition-all">
+            <UIcon name="i-heroicons-camera" class="w-4 h-4 text-slate-400" />
+          </a>
         </div>
       </div>
 
       <div v-for="col in footerLinks" :key="col.title">
-        <h4 class="text-white font-black uppercase tracking-widest text-sm mb-6">{{ col.title }}</h4>
-        <ul class="space-y-4">
+        <h4 class="text-white font-black uppercase tracking-widest text-xs mb-5">{{ col.title }}</h4>
+        <ul class="space-y-3">
           <li v-for="link in col.links" :key="link.label">
-            <NuxtLink :to="link.to" class="text-slate-500 hover:text-emerald-400 transition-colors font-medium">
+            <NuxtLink :to="link.to" class="text-slate-500 hover:text-emerald-400 transition-colors font-medium text-sm">
               {{ link.label }}
             </NuxtLink>
           </li>
@@ -31,11 +35,11 @@
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto border-t border-slate-800 mt-20 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
-      <p class="text-slate-500 font-medium">© 2026 NutriMate Project. All Rights Reserved.</p>
-      <div class="flex items-center gap-4">
-        <UBadge color="emerald" variant="subtle" class="bg-emerald-100 text-emerald-700 px-3 py-1">SDG 2: Zero Hunger</UBadge>
-        <UBadge color="teal" variant="subtle" class="bg-teal-100 text-teal-700 px-3 py-1">SDG 12: Responsible Consumption</UBadge>
+    <div class="max-w-7xl mx-auto border-t border-slate-800 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-slate-500 font-medium text-sm">© 2026 NutriMate Project. All Rights Reserved.</p>
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-bold">SDG 2: Zero Hunger</span>
+        <span class="bg-teal-500/10 text-teal-400 border border-teal-500/20 px-3 py-1 rounded-full text-xs font-bold">SDG 12: Responsible Consumption</span>
       </div>
     </div>
   </footer>
@@ -46,17 +50,21 @@ const footerLinks = [
   { 
     title: 'Platform', 
     links: [
-      { label: 'Browse Recipes', to: '/recipes' },
-      { label: 'Macro Calculator', to: '/profile' },
-      { label: 'Zero Waste Tips', to: '/zero-waste' }
+      { label: 'Browse Recipes', to: '/recipe' },
+      { label: 'Health Score', to: '/profile' },
+      { label: 'Zero Waste Tips', to: '/zero-waste' },
+      { label: 'Register', to: '/register' },
+      { label: 'Login', to: '/login' },
     ] 
   },
   { 
-    title: 'Project', 
+    title: 'Admin', 
     links: [
-      { label: 'FYP Proposal', to: '#' },
-      { label: 'System Design', to: '#' },
-      { label: 'Admin Access', to: '/admin' }
+      { label: 'Dashboard', to: '/admin' },
+      { label: 'Manage Recipes', to: '/admin/recipes' },
+      { label: 'Manage Users', to: '/admin/users' },
+      { label: 'Zero Waste Tips', to: '/admin/tips' },
+      { label: 'Settings', to: '/admin/settings' },
     ] 
   }
 ]

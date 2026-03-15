@@ -6,49 +6,58 @@ const router = useRouter()
 const toast = useToast()
 
 interface Recipe {
-  id: string;
-  title: string;
-  description: string;
-  instructions: string;
-  imageUrl: string;
-  cookingTime: number | null;
-  costLevel: string;
-  category: string;
-  isZeroWaste: boolean;
-  sustainabilityTip: string;
-  calories: number | null;
-  protein: number | null;
-  carbs: number | null;
-  fat: number | null;
-  ingredients: string;
-  createdAt: string;
-  seoTitle: string;
-  seoDescription: string;
-  seoKeywords: string;
+  id: number
+  title: string
+  description: string
+  instructions: string
+  imageUrl: string
+  cookingTime: number | null
+  costLevel: string
+  category: string
+  isZeroWaste: boolean
+  sustainabilityTip: string
+  calories: number | null
+  protein: number | null
+  carbs: number | null
+  fat: number | null
+  ingredients: string
+  createdAt: string
+  seoTitle: string
+  seoDescription: string
+  seoKeywords: string
+  nutrition?: { calories: number; protein: number; carbs: number; fat: number } | null
 }
-
-const getRecipes = (): Recipe[] => {
-  if (import.meta.server) return []
-  return JSON.parse(localStorage.getItem('nutrimate_recipes') || '[]')
-}
-const saveRecipes = (r: Recipe[]) => localStorage.setItem('nutrimate_recipes', JSON.stringify(r))
 
 const recipes = ref<Recipe[]>([])
+const loading = ref(false)
 const search = ref('')
 const isPanelOpen = ref(false)
 const isEditMode = ref(false)
-const editingId = ref<string | null>(null)
+const editingId = ref<number | null>(null)
 const saving = ref(false)
 const activeTab = ref('basic')
 const filterCategories = ['All', 'Zero Waste', 'High Protein', 'Budget Friendly', 'Quick Fix', 'Vegan']
 const activeCategory = ref('All')
 
-const emptyForm = (): Omit<Recipe, 'id' | 'createdAt'> => ({
+const tabs = [
+  { id: 'basic', label: 'Basic Info', icon: 'i-heroicons-document-text' },
+  { id: 'nutrition', label: 'Nutrition', icon: 'i-heroicons-fire' },
+  { id: 'seo', label: 'SEO', icon: 'i-heroicons-magnifying-glass' },
+]
+
+const nutritionFields = [
+  { key: 'calories', label: 'Calories', unit: 'kcal', placeholder: '450' },
+  { key: 'protein', label: 'Protein', unit: 'g', placeholder: '25' },
+  { key: 'carbs', label: 'Carbohydrates', unit: 'g', placeholder: '40' },
+  { key: 'fat', label: 'Total Fat', unit: 'g', placeholder: '15' },
+]
+
+const emptyForm = () => ({
   title: '', description: '', instructions: '', imageUrl: '',
-  cookingTime: null, costLevel: 'Low', category: 'Budget Friendly',
-  isZeroWaste: false, sustainabilityTip: '', calories: null,
-  protein: null, carbs: null, fat: null, ingredients: '',
-  seoTitle: '', seoDescription: '', seoKeywords: '',
+  cookingTime: null as number | null, costLevel: 'Low', category: 'Budget Friendly',
+  isZeroWaste: false, sustainabilityTip: '', calories: null as number | null,
+  protein: null as number | null, carbs: null as number | null, fat: null as number | null,
+  ingredients: '', seoTitle: '', seoDescription: '', seoKeywords: '',
 })
 const form = ref(emptyForm())
 
@@ -63,6 +72,22 @@ const filtered = computed(() => {
   return list
 })
 
+async function fetchRecipes() {
+  loading.value = true
+  try {
+    const data = await $fetch<any[]>('/api/recipes')
+    recipes.value = data.map(r => ({
+      ...r,
+      calories: r.nutrition?.calories ?? null,
+      protein: r.nutrition?.protein ?? null,
+      carbs: r.nutrition?.carbs ?? null,
+      fat: r.nutrition?.fat ?? null,
+    }))
+  } finally {
+    loading.value = false
+  }
+}
+
 function openAdd() {
   isEditMode.value = false
   editingId.value = null
@@ -73,59 +98,60 @@ function openAdd() {
 function openEdit(r: Recipe) {
   isEditMode.value = true
   editingId.value = r.id
-  form.value = { ...emptyForm(), ...r }
+  form.value = {
+    title: r.title, description: r.description, instructions: r.instructions,
+    imageUrl: r.imageUrl, cookingTime: r.cookingTime, costLevel: r.costLevel,
+    category: r.category, isZeroWaste: r.isZeroWaste, sustainabilityTip: r.sustainabilityTip,
+    calories: r.calories, protein: r.protein, carbs: r.carbs, fat: r.fat,
+    ingredients: r.ingredients, seoTitle: r.seoTitle, seoDescription: r.seoDescription, seoKeywords: r.seoKeywords,
+  }
   activeTab.value = 'basic'
   isPanelOpen.value = true
 }
 function closePanel() { isPanelOpen.value = false }
 
-function save() {
+async function save() {
   if (!form.value.title || !form.value.instructions) {
     toast.add({ title: 'Title and instructions are required', color: 'red' })
     activeTab.value = 'basic'
     return
   }
   saving.value = true
-  const list = getRecipes()
-  if (isEditMode.value && editingId.value) {
-    const idx = list.findIndex(r => r.id === editingId.value)
-    if (idx !== -1) {
-      const existing = list[idx]
-      list[idx] = { ...existing, ...form.value, id: editingId.value, createdAt: existing?.createdAt || new Date().toISOString() }
+  try {
+    if (isEditMode.value && editingId.value) {
+      await $fetch(`/api/recipes/${editingId.value}`, { method: 'PUT', body: form.value })
+      toast.add({ title: 'Recipe updated' })
+    } else {
+      await $fetch('/api/recipes', { method: 'POST', body: form.value })
+      toast.add({ title: 'Recipe added' })
     }
-    toast.add({ title: 'Recipe updated', color: 'emerald' })
-  } else {
-    const newRecipe: Recipe = { 
-      ...form.value, 
-      id: crypto.randomUUID(), 
-      createdAt: new Date().toISOString() 
-    }
-    list.push(newRecipe)
-    toast.add({ title: 'Recipe added', color: 'emerald' })
+    await fetchRecipes()
+    isPanelOpen.value = false
+  } catch (e: any) {
+    toast.add({ title: e?.data?.message ?? 'Failed to save', color: 'red' })
   }
-  saveRecipes(list)
-  recipes.value = list
-  isPanelOpen.value = false
   saving.value = false
 }
 
-function deleteRecipe(id: string) {
+async function deleteRecipe(id: number) {
   if (!confirm('Delete this recipe?')) return
-  const list = getRecipes().filter(r => r.id !== id)
-  saveRecipes(list)
-  recipes.value = list
-  toast.add({ title: 'Recipe deleted', color: 'emerald' })
+  try {
+    await $fetch(`/api/recipes/${id}`, { method: 'DELETE' })
+    toast.add({ title: 'Recipe deleted' })
+    await fetchRecipes()
+  } catch (e: any) {
+    toast.add({ title: e?.data?.message ?? 'Failed to delete', color: 'red' })
+  }
 }
 
-onMounted(() => {
-  recipes.value = getRecipes()
-  if (route.query.add === 'true') { 
+onMounted(async () => {
+  await fetchRecipes()
+  if (route.query.add === 'true') {
     openAdd()
-    router.replace('/admin/recipes') 
+    router.replace('/admin/recipes')
   }
 })
 </script>
-
 <template>
 <div>
   <div class="space-y-5">
@@ -210,6 +236,7 @@ onMounted(() => {
     </div>
   </div>
 
+
   <Teleport to="body">
     <Transition name="fade">
       <div v-if="isPanelOpen" class="fixed inset-0 z-[200] flex justify-end">
@@ -226,12 +253,7 @@ onMounted(() => {
               </button>
             </div>
             <div class="flex border-b border-slate-100 px-6 shrink-0">
-              <button
-                v-for="tab in [
-                  { id: 'basic', label: 'Basic Info', icon: 'i-heroicons-document-text' },
-                  { id: 'nutrition', label: 'Nutrition', icon: 'i-heroicons-fire' },
-                  { id: 'seo', label: 'SEO', icon: 'i-heroicons-magnifying-glass' },
-                ]" :key="tab.id"
+              <button v-for="tab in [{id:'basic',label:'Basic Info',icon:'i-heroicons-document-text'},{id:'nutrition',label:'Nutrition',icon:'i-heroicons-fire'},{id:'seo',label:'SEO',icon:'i-heroicons-magnifying-glass'}]" :key="tab.id"
                 :class="activeTab === tab.id ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-slate-400 hover:text-slate-600'"
                 class="flex items-center gap-1.5 px-4 py-3.5 text-xs font-black uppercase tracking-wider -mb-px"
                 @click="activeTab = tab.id">
@@ -240,155 +262,62 @@ onMounted(() => {
             </div>
             <div class="flex-1 overflow-y-auto p-6 space-y-5">
               <template v-if="activeTab === 'basic'">
-                <div class="space-y-1.5">
-                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Recipe Title *</label>
-                  <input
-                    v-model="form.title" type="text" placeholder="e.g. Healthy Chicken Karahi"
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white">
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Short Description</label>
-                  <input
-                    v-model="form.description" type="text" placeholder="A brief description..."
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white">
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Image URL</label>
-                  <input
-                    v-model="form.imageUrl" type="url" placeholder="https://images.unsplash.com/..."
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white">
-                  <div v-if="form.imageUrl" class="mt-2 h-32 rounded-xl overflow-hidden border border-slate-100">
-                    <img :src="form.imageUrl" alt="Preview" class="w-full h-full object-cover">
-                  </div>
-                </div>
+                <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Recipe Title *</label>
+                  <input v-model="form.title" type="text" placeholder="e.g. Healthy Chicken Karahi" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white"></div>
+                <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Short Description</label>
+                  <input v-model="form.description" type="text" placeholder="A brief description..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white"></div>
+                <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Image URL</label>
+                  <input v-model="form.imageUrl" type="url" placeholder="https://images.unsplash.com/..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white">
+                  <div v-if="form.imageUrl" class="mt-2 h-32 rounded-xl overflow-hidden border border-slate-100"><img :src="form.imageUrl" alt="Preview" class="w-full h-full object-cover"></div></div>
                 <div class="grid grid-cols-2 gap-4">
-                  <div class="space-y-1.5">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Category</label>
+                  <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Category</label>
                     <select v-model="form.category" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white cursor-pointer">
-                      <option v-for="c in ['Zero Waste','High Protein','Budget Friendly','Quick Fix','Vegan']" :key="c">{{ c }}</option>
-                    </select>
-                  </div>
-                  <div class="space-y-1.5">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Cost Level</label>
+                      <option v-for="c in ['Zero Waste','High Protein','Budget Friendly','Quick Fix','Vegan']" :key="c">{{ c }}</option></select></div>
+                  <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Cost Level</label>
                     <select v-model="form.costLevel" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white cursor-pointer">
-                      <option>Low</option><option>Medium</option><option>High</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Cooking Time (minutes)</label>
-                  <input
-                    v-model.number="form.cookingTime" type="number" placeholder="20" min="1"
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white">
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Ingredients (comma separated)</label>
-                  <input
-                    v-model="form.ingredients" type="text" placeholder="Chicken, Rice, Tomato..."
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white">
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Instructions * (one step per line)</label>
-                  <textarea
-                    v-model="form.instructions" rows="5" placeholder="Step 1: Marinate the chicken..."
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white resize-none" />
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Zero Waste Tip</label>
-                  <textarea
-                    v-model="form.sustainabilityTip" rows="2" placeholder="How to use leftovers..."
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white resize-none" />
-                </div>
+                      <option>Low</option><option>Medium</option><option>High</option></select></div></div>
+                <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Cooking Time (minutes)</label>
+                  <input v-model.number="form.cookingTime" type="number" placeholder="20" min="1" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white"></div>
+                <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Ingredients (comma separated)</label>
+                  <input v-model="form.ingredients" type="text" placeholder="Chicken, Rice, Tomato..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white"></div>
+                <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Instructions *</label>
+                  <textarea v-model="form.instructions" rows="5" placeholder="Step 1: Marinate the chicken..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white resize-none" /></div>
+                <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Zero Waste Tip</label>
+                  <textarea v-model="form.sustainabilityTip" rows="2" placeholder="How to use leftovers..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white resize-none" /></div>
                 <label class="flex items-center gap-3 cursor-pointer p-4 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/30">
-                  <div class="relative shrink-0">
-                    <input v-model="form.isZeroWaste" type="checkbox" class="sr-only">
+                  <div class="relative shrink-0"><input v-model="form.isZeroWaste" type="checkbox" class="sr-only">
                     <div :class="form.isZeroWaste ? 'bg-emerald-500' : 'bg-slate-200'" class="w-10 h-6 rounded-full transition-colors">
-                      <div :class="form.isZeroWaste ? 'translate-x-5' : 'translate-x-1'" class="w-4 h-4 bg-white rounded-full shadow mt-1 transition-transform" />
-                    </div>
-                  </div>
-                  <div>
-                    <p class="text-sm font-bold text-slate-700">Mark as Zero Waste Recipe</p>
-                    <p class="text-xs text-slate-400">Will be tagged with the Zero Waste badge</p>
-                  </div>
-                </label>
+                      <div :class="form.isZeroWaste ? 'translate-x-5' : 'translate-x-1'" class="w-4 h-4 bg-white rounded-full shadow mt-1 transition-transform" /></div></div>
+                  <div><p class="text-sm font-bold text-slate-700">Mark as Zero Waste Recipe</p><p class="text-xs text-slate-400">Will be tagged with the Zero Waste badge</p></div></label>
               </template>
               <template v-if="activeTab === 'nutrition'">
-                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100">
-                  <p class="text-xs font-bold text-emerald-700">Per serving values</p>
-                </div>
+                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100"><p class="text-xs font-bold text-emerald-700">Per serving values</p></div>
                 <div class="grid grid-cols-2 gap-4">
-                  <div
-                    v-for="field in [
-                      { key: 'calories', label: 'Calories', unit: 'kcal', placeholder: '450' },
-                      { key: 'protein', label: 'Protein', unit: 'g', placeholder: '25' },
-                      { key: 'carbs', label: 'Carbohydrates', unit: 'g', placeholder: '40' },
-                      { key: 'fat', label: 'Total Fat', unit: 'g', placeholder: '15' },
-                    ]" :key="field.key" class="space-y-1.5">
+                  <div v-for="field in [{key:'calories',label:'Calories',unit:'kcal',placeholder:'450'},{key:'protein',label:'Protein',unit:'g',placeholder:'25'},{key:'carbs',label:'Carbs',unit:'g',placeholder:'40'},{key:'fat',label:'Fat',unit:'g',placeholder:'15'}]" :key="field.key" class="space-y-1.5">
                     <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">{{ field.label }}</label>
-                    <div class="relative">
-                      <input
-                        v-model.number="(form as any)[field.key]" type="number" :placeholder="field.placeholder" min="0"
-                        class="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white">
-                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">{{ field.unit }}</span>
-                    </div>
-                  </div>
-                </div>
-                <div v-if="form.calories" class="p-5 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
-                  <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Macro Breakdown</p>
-                  <div class="flex gap-3">
-                    <div
-                      v-for="m in [
-                        { label: 'Protein', val: form.protein, color: 'bg-blue-400' },
-                        { label: 'Carbs', val: form.carbs, color: 'bg-orange-400' },
-                        { label: 'Fat', val: form.fat, color: 'bg-yellow-400' },
-                      ]" :key="m.label" class="flex-1 text-center">
-                      <div class="h-2 rounded-full mb-2" :class="m.color" :style="{ opacity: m.val ? 1 : 0.2 }" />
-                      <p class="text-xs font-bold text-slate-700">{{ m.val ?? 0 }}g</p>
-                      <p class="text-[9px] text-slate-400 uppercase tracking-wider">{{ m.label }}</p>
-                    </div>
-                  </div>
-                </div>
+                    <div class="relative"><input v-model.number="(form as any)[field.key]" type="number" :placeholder="field.placeholder" min="0" class="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">{{ field.unit }}</span></div></div></div>
               </template>
               <template v-if="activeTab === 'seo'">
-                <div class="space-y-1.5">
-                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">SEO Title</label>
-                  <input
-                    v-model="form.seoTitle" type="text" :placeholder="form.title || 'SEO optimized title...'"
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white">
-                  <p class="text-xs text-slate-400">{{ (form.seoTitle || form.title || '').length }}/60 characters</p>
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Meta Description</label>
-                  <textarea
-                    v-model="form.seoDescription" rows="3" :placeholder="form.description || 'Describe this recipe for search engines...'"
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white resize-none" />
-                  <p class="text-xs text-slate-400">{{ (form.seoDescription || form.description || '').length }}/160 characters</p>
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Keywords (comma separated)</label>
-                  <input
-                    v-model="form.seoKeywords" type="text" placeholder="healthy recipe, zero waste..."
-                    class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white">
-                </div>
-                <div class="space-y-2">
-                  <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Google Search Preview</p>
+                <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">SEO Title</label>
+                  <input v-model="form.seoTitle" type="text" :placeholder="form.title || 'SEO title...'" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white">
+                  <p class="text-xs text-slate-400">{{ (form.seoTitle || form.title || '').length }}/60 characters</p></div>
+                <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Meta Description</label>
+                  <textarea v-model="form.seoDescription" rows="3" :placeholder="form.description || 'Describe for search engines...'" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white resize-none" />
+                  <p class="text-xs text-slate-400">{{ (form.seoDescription || form.description || '').length }}/160 characters</p></div>
+                <div class="space-y-1.5"><label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Keywords</label>
+                  <input v-model="form.seoKeywords" type="text" placeholder="healthy recipe, zero waste..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white"></div>
+                <div class="space-y-2"><p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Google Preview</p>
                   <div class="p-4 rounded-xl border border-slate-200 bg-white space-y-1">
                     <p class="text-[13px] text-slate-400 truncate">{{ seoPreviewUrl }}</p>
                     <p class="text-[17px] text-blue-600 font-medium leading-tight truncate">{{ seoPreviewTitle }}</p>
-                    <p class="text-[13px] text-slate-500 leading-relaxed line-clamp-2">{{ seoPreviewDesc }}</p>
-                  </div>
-                </div>
+                    <p class="text-[13px] text-slate-500 leading-relaxed line-clamp-2">{{ seoPreviewDesc }}</p></div></div>
               </template>
             </div>
             <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between shrink-0">
               <button class="text-sm font-semibold text-slate-400 hover:text-slate-600" @click="closePanel">Cancel</button>
-              <button
-                :disabled="saving"
-                class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider"
-                @click="save">
-                <UIcon name="i-heroicons-check" class="w-4 h-4" />
-                {{ saving ? 'Saving...' : isEditMode ? 'Update Recipe' : 'Save Recipe' }}
-              </button>
+              <button :disabled="saving" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider" @click="save">
+                <UIcon name="i-heroicons-check" class="w-4 h-4" />{{ saving ? 'Saving...' : isEditMode ? 'Update Recipe' : 'Save Recipe' }}</button>
             </div>
           </div>
         </Transition>
@@ -398,3 +327,9 @@ onMounted(() => {
 </div>
 </template>
 
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.25s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+.slide-enter-active, .slide-leave-active { transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1); }
+.slide-enter-from, .slide-leave-to { transform: translateX(100%); }
+</style>

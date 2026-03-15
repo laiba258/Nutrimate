@@ -14,12 +14,11 @@ if (isLoggedIn.value) navigateTo(isAdmin.value ? '/admin' : '/')
 async function submit() {
   error.value = ''
   loading.value = true
-  await new Promise(r => setTimeout(r, 300))
-  const result = login(email.value, password.value)
-  if (result.success) {
-    await navigateTo(isAdmin.value ? '/admin' : '/')
-  } else {
-    error.value = result.error ?? 'Login failed'
+  try {
+    const result = await login(email.value, password.value)
+    await navigateTo(result.role === 'admin' ? '/admin' : '/')
+  } catch (e: any) {
+    error.value = e?.data?.message ?? 'Login failed'
   }
   loading.value = false
 }

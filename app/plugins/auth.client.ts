@@ -1,4 +1,4 @@
-export default defineNuxtPlugin(() => {
-    const { loadFromStorage } = useAuth()
-    loadFromStorage()
+export default defineNuxtPlugin(async () => {
+    const { loadUser } = useAuth()
+    await loadUser()
 })

@@ -1,8 +1,10 @@
 import { db } from '../../db/index'
 import { recipes } from '../../db/schema'
 import { eq } from 'drizzle-orm'
+import { requireAdmin } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
+    requireAdmin(event)
     const id = Number(getRouterParam(event, 'id'))
     if (!id) throw createError({ statusCode: 400, message: 'Invalid ID' })
 

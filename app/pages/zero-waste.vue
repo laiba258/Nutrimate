@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-[#FCFCFC] pb-32">
 
     <!-- Hero -->
-    <div class="relative pt-32 pb-20 px-6 text-center overflow-hidden">
+    <div class="relative pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 text-center overflow-hidden">
       <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[60vw] h-[40vw] bg-emerald-50/60 rounded-full blur-[120px] pointer-events-none" />
       <div class="relative z-10 space-y-4 max-w-2xl mx-auto">
         <p class="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">SDG 12 — Responsible Consumption</p>
@@ -15,20 +15,20 @@
       </div>
     </div>
 
-    <div class="max-w-4xl mx-auto px-6 space-y-10">
+    <div class="max-w-4xl mx-auto px-4 md:px-6 space-y-10">
 
       <!-- Input -->
-      <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8 space-y-5">
+      <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-6 md:p-8 space-y-5">
         <div class="flex gap-3">
           <input
             v-model="newIngredient"
             type="text"
             placeholder="e.g. Lemon, Bread, Tomato..."
-            class="flex-1 px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 text-sm font-medium outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
+            class="flex-1 min-w-0 px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 text-sm font-medium outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
             @keyup.enter="addIngredient"
           >
           <button
-            class="bg-emerald-500 hover:bg-emerald-600 text-white px-7 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-100"
+            class="shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-100"
             @click="addIngredient"
           >
             Add

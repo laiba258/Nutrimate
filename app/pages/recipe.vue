@@ -36,6 +36,7 @@ const queryParams = computed(() => {
 })
 
 const { data: recipes, refresh } = await useFetch<Recipe[]>('/api/recipes', {
+  lazy: true,
   query: queryParams,
 })
 

@@ -6,8 +6,12 @@ if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable is not set')
 }
 
+// Strip sslmode=require from URL to avoid pg v9 strict cert verification
+const connectionString = process.env.DATABASE_URL.replace('sslmode=require', 'sslmode=no-verify')
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString,
+    ssl: { rejectUnauthorized: false },
 })
 
 pool.on('error', (err) => {

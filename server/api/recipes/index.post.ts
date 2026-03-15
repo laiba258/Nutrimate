@@ -1,8 +1,10 @@
 import { db } from '../../db/index'
 import { recipes, nutrition } from '../../db/schema'
+import { requireAdmin } from '../../utils/auth'
 import type { CreateRecipeBody } from '../../types'
 
 export default defineEventHandler(async (event) => {
+    requireAdmin(event)
     const body = await readBody<CreateRecipeBody>(event)
 
     if (!body.title || !body.instructions) {
@@ -16,8 +18,13 @@ export default defineEventHandler(async (event) => {
         imageUrl: body.imageUrl ?? null,
         cookingTime: body.cookingTime ?? null,
         costLevel: body.costLevel ?? null,
+        category: body.category ?? null,
         isZeroWaste: body.isZeroWaste ?? false,
         sustainabilityTip: body.sustainabilityTip ?? null,
+        ingredients: body.ingredients ?? null,
+        seoTitle: body.seoTitle ?? null,
+        seoDescription: body.seoDescription ?? null,
+        seoKeywords: body.seoKeywords ?? null,
     }).returning()
 
     if (body.calories !== undefined && recipe) {

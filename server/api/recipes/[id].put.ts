@@ -1,9 +1,11 @@
 import { db } from '../../db/index'
 import { recipes, nutrition } from '../../db/schema'
 import { eq } from 'drizzle-orm'
+import { requireAdmin } from '../../utils/auth'
 import type { CreateRecipeBody } from '../../types'
 
 export default defineEventHandler(async (event) => {
+    requireAdmin(event)
     const id = Number(getRouterParam(event, 'id'))
     const body = await readBody<Partial<CreateRecipeBody>>(event)
 
@@ -16,8 +18,13 @@ export default defineEventHandler(async (event) => {
         imageUrl: body.imageUrl,
         cookingTime: body.cookingTime,
         costLevel: body.costLevel,
+        category: body.category,
         isZeroWaste: body.isZeroWaste,
         sustainabilityTip: body.sustainabilityTip,
+        ingredients: body.ingredients,
+        seoTitle: body.seoTitle,
+        seoDescription: body.seoDescription,
+        seoKeywords: body.seoKeywords,
         updatedAt: new Date(),
     }).where(eq(recipes.id, id)).returning()
 

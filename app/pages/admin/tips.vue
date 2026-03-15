@@ -5,15 +5,13 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
-interface Tip { id: string; ingredient: string; tip: string; icon: string }
+interface Tip { id: number; ingredient: string; tip: string; icon: string }
 
-const getTips = (): Tip[] => JSON.parse(localStorage.getItem('nutrimate_tips') || '[]')
-const saveTips = (t: Tip[]) => localStorage.setItem('nutrimate_tips', JSON.stringify(t))
-
-const tips = ref<Tip[]>(getTips())
+const tips = ref<Tip[]>([])
 const isPanelOpen = ref(false)
 const isEditMode = ref(false)
-const editingId = ref<string | null>(null)
+const editingId = ref<number | null>(null)
+const saving = ref(false)
 const search = ref('')
 
 const emptyForm = () => ({ ingredient: '', tip: '', icon: '🌿' })
@@ -22,6 +20,10 @@ const form = ref(emptyForm())
 const filtered = computed(() =>
   tips.value.filter(t => t.ingredient.toLowerCase().includes(search.value.toLowerCase()))
 )
+
+async function fetchTips() {
+  tips.value = await $fetch<Tip[]>('/api/tips')
+}
 
 function openAdd() {
   isEditMode.value = false
@@ -39,34 +41,41 @@ function openEdit(t: Tip) {
 
 function closePanel() { isPanelOpen.value = false }
 
-function save() {
+async function save() {
   if (!form.value.ingredient || !form.value.tip) {
     toast.add({ title: 'Ingredient and tip are required', color: 'red' })
     return
   }
-  const list = getTips()
-  if (isEditMode.value && editingId.value) {
-    const idx = list.findIndex(t => t.id === editingId.value)
-    if (idx !== -1) list[idx] = { ...list[idx]!, ...form.value }
-    toast.add({ title: 'Tip updated', color: 'emerald' })
-  } else {
-    list.push({ ...form.value, id: crypto.randomUUID() })
-    toast.add({ title: 'Tip added', color: 'emerald' })
+  saving.value = true
+  try {
+    if (isEditMode.value && editingId.value) {
+      await $fetch(`/api/tips/${editingId.value}`, { method: 'PUT', body: form.value })
+      toast.add({ title: 'Tip updated' })
+    } else {
+      await $fetch('/api/tips', { method: 'POST', body: form.value })
+      toast.add({ title: 'Tip added' })
+    }
+    await fetchTips()
+    isPanelOpen.value = false
+  } catch (e: any) {
+    toast.add({ title: e?.data?.message ?? 'Failed to save', color: 'red' })
   }
-  saveTips(list)
-  tips.value = list
-  isPanelOpen.value = false
+  saving.value = false
 }
 
-function deleteTip(id: string) {
+async function deleteTip(id: number) {
   if (!confirm('Delete this tip?')) return
-  const list = getTips().filter(t => t.id !== id)
-  saveTips(list)
-  tips.value = list
-  toast.add({ title: 'Tip deleted', color: 'emerald' })
+  try {
+    await $fetch(`/api/tips/${id}`, { method: 'DELETE' })
+    toast.add({ title: 'Tip deleted' })
+    await fetchTips()
+  } catch (e: any) {
+    toast.add({ title: e?.data?.message ?? 'Failed', color: 'red' })
+  }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await fetchTips()
   if (route.query.add === 'true') { openAdd(); router.replace('/admin/tips') }
 })
 </script>

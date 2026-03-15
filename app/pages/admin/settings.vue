@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'admin', layout: 'admin' })
-const { user, logout } = useAuth()
+const { user } = useAuth()
 const toast = useToast()
 
 const name = ref(user.value?.name ?? '')
@@ -8,87 +8,100 @@ const email = ref(user.value?.email ?? '')
 const currentPassword = ref('')
 const newPassword = ref('')
 
-function saveProfile() {
+async function saveProfile() {
   if (!name.value) { toast.add({ title: 'Name is required', color: 'red' }); return }
-  const users = JSON.parse(localStorage.getItem('nutrimate_users') || '[]')
-  const idx = users.findIndex((u: any) => u.id === user.value?.id)
-  if (idx !== -1) {
-    users[idx].name = name.value
-    localStorage.setItem('nutrimate_users', JSON.stringify(users))
-    localStorage.setItem('nutrimate_user', JSON.stringify({ ...user.value, name: name.value }))
+  try {
+    await $fetch('/api/auth/update-profile', { method: 'POST', body: { name: name.value } })
     if (user.value) user.value.name = name.value
+    toast.add({ title: 'Profile updated' })
+  } catch (e: any) {
+    toast.add({ title: e?.data?.message ?? 'Failed', color: 'red' })
   }
-  toast.add({ title: 'Profile updated', color: 'emerald' })
 }
 
-function changePassword() {
+async function changePassword() {
   if (!currentPassword.value || !newPassword.value) {
     toast.add({ title: 'Fill in both fields', color: 'red' }); return
   }
-  const passwords = JSON.parse(localStorage.getItem('nutrimate_passwords') || '{}')
-  if (passwords[user.value?.id ?? ''] !== currentPassword.value) {
-    toast.add({ title: 'Current password is incorrect', color: 'red' }); return
+  try {
+    await $fetch('/api/auth/change-password', {
+      method: 'POST',
+      body: { currentPassword: currentPassword.value, newPassword: newPassword.value },
+    })
+    currentPassword.value = ''
+    newPassword.value = ''
+    toast.add({ title: 'Password changed' })
+  } catch (e: any) {
+    toast.add({ title: e?.data?.message ?? 'Failed', color: 'red' })
   }
-  passwords[user.value?.id ?? ''] = newPassword.value
-  localStorage.setItem('nutrimate_passwords', JSON.stringify(passwords))
-  currentPassword.value = ''
-  newPassword.value = ''
-  toast.add({ title: 'Password changed', color: 'emerald' })
-}
-
-function clearData(key: string, label: string) {
-  if (!confirm(`Clear all ${label}? This cannot be undone.`)) return
-  localStorage.removeItem(key)
-  toast.add({ title: `${label} cleared`, color: 'emerald' })
 }
 </script>
 
 <template>
   <div class="space-y-6 max-w-2xl">
     <!-- Profile -->
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
       <h3 class="font-black text-slate-900 tracking-tighter">Admin Profile</h3>
-      <div class="grid grid-cols-2 gap-4">
-        <UFormGroup label="Display Name">
-          <UInput v-model="name" placeholder="Your name" />
-        </UFormGroup>
-        <UFormGroup label="Email">
-          <UInput :model-value="email" disabled class="opacity-60" />
-        </UFormGroup>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Display Name</label>
+          <input
+            v-model="name"
+            type="text"
+            placeholder="Your name"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white"
+          >
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Email</label>
+          <input
+            :value="email"
+            type="email"
+            disabled
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-400 bg-slate-50 cursor-not-allowed"
+          >
+        </div>
       </div>
       <div class="flex justify-end">
-        <UButton class="bg-emerald-500 hover:bg-emerald-600 text-white" label="Save Profile" @click="saveProfile" />
+        <button
+          class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all"
+          @click="saveProfile"
+        >
+          Save Profile
+        </button>
       </div>
     </div>
 
     <!-- Password -->
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
       <h3 class="font-black text-slate-900 tracking-tighter">Change Password</h3>
-      <div class="grid grid-cols-2 gap-4">
-        <UFormGroup label="Current Password">
-          <UInput v-model="currentPassword" type="password" placeholder="••••••••" />
-        </UFormGroup>
-        <UFormGroup label="New Password">
-          <UInput v-model="newPassword" type="password" placeholder="••••••••" />
-        </UFormGroup>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Current Password</label>
+          <input
+            v-model="currentPassword"
+            type="password"
+            placeholder="••••••••"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white"
+          >
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">New Password</label>
+          <input
+            v-model="newPassword"
+            type="password"
+            placeholder="••••••••"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white"
+          >
+        </div>
       </div>
       <div class="flex justify-end">
-        <UButton class="bg-emerald-500 hover:bg-emerald-600 text-white" label="Update Password" @click="changePassword" />
-      </div>
-    </div>
-
-    <!-- Danger zone -->
-    <div class="bg-white rounded-2xl border border-red-100 shadow-sm p-6 space-y-4">
-      <h3 class="font-black text-red-500 tracking-tighter">Danger Zone</h3>
-      <div class="space-y-3">
-        <div v-for="item in [
-          { key: 'nutrimate_recipes', label: 'All Recipes' },
-          { key: 'nutrimate_tips', label: 'All Tips' },
-          { key: 'nutrimate_categories', label: 'All Categories' },
-        ]" :key="item.key" class="flex items-center justify-between p-4 rounded-xl bg-red-50 border border-red-100">
-          <p class="text-sm font-semibold text-slate-700">Clear {{ item.label }}</p>
-          <UButton class="bg-red-500 hover:bg-red-600 text-white" variant="soft" size="xs" :label="`Clear ${item.label}`" @click="clearData(item.key, item.label)" />
-        </div>
+        <button
+          class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all"
+          @click="changePassword"
+        >
+          Update Password
+        </button>
       </div>
     </div>
   </div>

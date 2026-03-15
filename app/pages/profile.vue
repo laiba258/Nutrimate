@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#FCFCFC] pt-8 pb-32">
-    <div class="max-w-5xl mx-auto px-6 space-y-10">
+    <div class="max-w-5xl mx-auto px-4 md:px-6 space-y-8 md:space-y-10">
 
       <!-- Header -->
       <div class="text-center space-y-3 pt-8">
@@ -75,7 +75,13 @@
             <h3 class="font-black text-slate-900 tracking-tighter text-xl">Your Profile</h3>
             <p class="text-xs text-slate-400 mt-1">Personalize your nutrition goals</p>
           </div>
-          <UButton v-if="!isEditing" variant="ghost" color="gray" icon="i-heroicons-pencil-square" label="Edit" @click="isEditing = true" />
+          <button
+            v-if="!isEditing"
+            class="flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-emerald-600 transition-colors px-3 py-2 rounded-xl hover:bg-slate-50"
+            @click="isEditing = true"
+          >
+            <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" /> Edit
+          </button>
         </div>
 
         <div v-if="!isEditing" class="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -95,19 +101,29 @@
 
         <form v-else class="space-y-4" @submit.prevent="saveProfile">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <UFormGroup label="Name">
-              <UInput v-model="form.name" placeholder="Your name" />
-            </UFormGroup>
-            <UFormGroup label="Daily Calorie Goal">
-              <UInput v-model.number="form.dailyCalorieGoal" type="number" placeholder="2000" />
-            </UFormGroup>
-            <UFormGroup label="Diet Preference">
-              <USelect v-model="form.dietPreference" :options="dietOptions" />
-            </UFormGroup>
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Name</label>
+              <input v-model="form.name" type="text" placeholder="Your name"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white">
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Daily Calorie Goal</label>
+              <input v-model.number="form.dailyCalorieGoal" type="number" placeholder="2000"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white">
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Diet Preference</label>
+              <select v-model="form.dietPreference"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 outline-none focus:border-emerald-400 bg-white cursor-pointer">
+                <option v-for="opt in dietOptions" :key="opt">{{ opt }}</option>
+              </select>
+            </div>
           </div>
           <div class="flex gap-3 justify-end">
-            <UButton color="gray" variant="ghost" label="Cancel" @click="isEditing = false" />
-            <UButton type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white" :loading="saving" label="Save Profile" />
+            <button type="button" class="text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors px-4 py-2" @click="isEditing = false">Cancel</button>
+            <button type="submit" :disabled="saving" class="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+              {{ saving ? 'Saving...' : 'Save Profile' }}
+            </button>
           </div>
         </form>
       </div>
@@ -125,7 +141,7 @@ const isEditing = ref(false)
 
 const { data: profile, refresh } = await useFetch<{
   id: number; name: string | null; dailyCalorieGoal: number | null; dietPreference: string | null
-} | null>('/api/profile')
+} | null>('/api/profile', { lazy: true })
 
 const form = ref({
   name: profile.value?.name ?? '',

@@ -19,7 +19,7 @@ const steps = [
   { number: '03', title: 'Zero Waste', description: 'Use every last scrap in your pantry.', icon: 'i-heroicons-leaf' },
 ]
 
-const { data: allRecipes } = await useFetch<Recipe[]>('/api/recipes')
+const { data: allRecipes } = await useFetch<Recipe[]>('/api/recipes', { lazy: true })
 
 const trendingRecipes = computed(() =>
   (allRecipes.value ?? []).slice(0, 3).map(r => ({
@@ -45,7 +45,7 @@ const openFiltersOnRecipes = () => {
     
     <HomeHero />
 
-    <div class="fixed bottom-10 right-10 z-50">
+    <div class="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-40">
       <button class="group relative flex items-center justify-center w-16 h-16 bg-emerald-500 text-white rounded-full shadow-[0_20px_50px_rgba(16,185,129,0.3)] hover:scale-110 active:scale-95 transition-all" @click="openFiltersOnRecipes">
         <div class="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-20 group-hover:hidden" />
         <UIcon name="i-heroicons-adjustments-horizontal-20-solid" class="w-7 h-7" />
@@ -53,8 +53,8 @@ const openFiltersOnRecipes = () => {
       </button>
     </div>
 
-    <section class="max-w-7xl mx-auto px-6 py-32 relative">
-      <div class="text-center mb-24 space-y-4">
+    <section class="max-w-7xl mx-auto px-4 md:px-6 py-16 md:py-32 relative">
+      <div class="text-center mb-12 md:mb-24 space-y-4">
         <h2 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter">
           The Simple <span class="text-[#10b981] italic font-serif font-light lowercase">Process.</span>
         </h2>
@@ -65,16 +65,16 @@ const openFiltersOnRecipes = () => {
       </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-6 py-24 bg-white rounded-[4rem] mb-24 border border-slate-50 shadow-sm relative overflow-hidden">
+    <section class="max-w-7xl mx-auto px-4 md:px-6 py-16 md:py-24 bg-white rounded-[2rem] md:rounded-[4rem] mb-16 md:mb-24 border border-slate-50 shadow-sm relative overflow-hidden">
       <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-50/50 rounded-full blur-[100px] -mr-32 -mt-32" />
       <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 px-4 relative z-10">
         <div class="space-y-3">
           <p class="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Curated for you</p>
           <h2 class="text-4xl font-black text-slate-900 tracking-tighter leading-none">Smart Picks.</h2>
         </div>
-        <UButton to="/recipe" variant="ghost" color="gray" class="text-[10px] font-black uppercase tracking-widest hover:text-emerald-600">
-          View all 40+ Recipes
-        </UButton>
+        <NuxtLink to="/recipe" class="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-emerald-600 transition-colors flex items-center gap-1">
+          View all Recipes <UIcon name="i-heroicons-arrow-right-20-solid" class="w-3 h-3" />
+        </NuxtLink>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 relative z-10">
         <template v-if="!allRecipes">
@@ -95,7 +95,7 @@ const openFiltersOnRecipes = () => {
       </div>
     </section>
     
-    <section class="max-w-7xl mx-auto px-6 mb-32">
+    <section class="max-w-7xl mx-auto px-4 md:px-6 mb-16 md:mb-32">
       <div class="relative overflow-hidden rounded-[4rem] bg-emerald-50/50 p-12 md:p-24 border border-emerald-100/50 text-center space-y-10">
         <h2 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter">Stay Healthy, <span class="text-emerald-500 italic font-serif">Stay Updated.</span></h2>
         <form class="flex flex-col sm:flex-row gap-2 p-2 bg-white rounded-3xl shadow-xl shadow-emerald-900/5 max-w-xl mx-auto" @submit.prevent>

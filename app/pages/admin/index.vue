@@ -1,23 +1,18 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'admin', layout: 'admin' })
 
-const { getUsers } = useAuth()
-
-// Local recipe store
-const getRecipes = () => JSON.parse(localStorage.getItem('nutrimate_recipes') || '[]')
-
-const recipes = ref(getRecipes())
-const users = ref(getUsers())
+const { data: recipes } = await useFetch<any[]>('/api/recipes', { lazy: true, default: () => [] })
+const { data: users } = await useFetch<any[]>('/api/users', { lazy: true, default: () => [] })
 
 const stats = computed(() => [
-  { label: 'Total Recipes', value: recipes.value.length, icon: 'i-heroicons-book-open', color: 'emerald', change: '+3 this week' },
-  { label: 'Registered Users', value: users.value.length, icon: 'i-heroicons-users', color: 'blue', change: 'All time' },
-  { label: 'Zero Waste', value: recipes.value.filter((r: any) => r.isZeroWaste).length, icon: 'i-heroicons-leaf', color: 'teal', change: 'Recipes tagged' },
-  { label: 'Low Budget', value: recipes.value.filter((r: any) => r.costLevel === 'Low').length, icon: 'i-heroicons-banknotes', color: 'orange', change: 'Affordable picks' },
+  { label: 'Total Recipes', value: recipes.value?.length ?? 0, icon: 'i-heroicons-book-open', change: '+3 this week' },
+  { label: 'Registered Users', value: users.value?.length ?? 0, icon: 'i-heroicons-users', change: 'All time' },
+  { label: 'Zero Waste', value: recipes.value?.filter((r: any) => r.isZeroWaste).length ?? 0, icon: 'i-heroicons-leaf', change: 'Recipes tagged' },
+  { label: 'Low Budget', value: recipes.value?.filter((r: any) => r.costLevel === 'Low').length ?? 0, icon: 'i-heroicons-banknotes', change: 'Affordable picks' },
 ])
 
-const recentRecipes = computed(() => [...recipes.value].reverse().slice(0, 5))
-const recentUsers = computed(() => [...users.value].reverse().slice(0, 5))
+const recentRecipes = computed(() => [...(recipes.value ?? [])].reverse().slice(0, 5))
+const recentUsers = computed(() => [...(users.value ?? [])].reverse().slice(0, 5))
 </script>
 
 <template>
@@ -45,7 +40,9 @@ const recentUsers = computed(() => [...users.value].reverse().slice(0, 5))
       <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
           <h3 class="font-black text-slate-900 tracking-tighter">Recent Recipes</h3>
-          <UButton to="/admin/recipes" variant="ghost" color="gray" size="xs" label="View all" trailing-icon="i-heroicons-arrow-right" />
+          <NuxtLink to="/admin/recipes" class="text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors flex items-center gap-1">
+            View all <UIcon name="i-heroicons-arrow-right" class="w-3 h-3" />
+          </NuxtLink>
         </div>
         <div v-if="recentRecipes.length" class="divide-y divide-slate-50">
           <div v-for="r in recentRecipes" :key="r.id" class="px-6 py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
@@ -56,9 +53,11 @@ const recentUsers = computed(() => [...users.value].reverse().slice(0, 5))
               <p class="font-bold text-slate-800 text-sm truncate">{{ r.title }}</p>
               <p class="text-xs text-slate-400">{{ r.costLevel ?? '—' }} · {{ r.cookingTime ? r.cookingTime + ' min' : '—' }}</p>
             </div>
-            <UBadge :class="r.isZeroWaste ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-500'" variant="subtle" size="xs">
+            <span
+                :class="r.isZeroWaste ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-500'"
+                class="text-xs font-bold px-2.5 py-1 rounded-lg">
               {{ r.isZeroWaste ? 'Zero Waste' : r.costLevel ?? '—' }}
-            </UBadge>
+            </span>
           </div>
         </div>
         <div v-else class="px-6 py-12 text-center">
@@ -71,7 +70,9 @@ const recentUsers = computed(() => [...users.value].reverse().slice(0, 5))
       <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between">
           <h3 class="font-black text-slate-900 tracking-tighter">Recent Users</h3>
-          <UButton to="/admin/users" variant="ghost" color="gray" size="xs" label="View all" trailing-icon="i-heroicons-arrow-right" />
+          <NuxtLink to="/admin/users" class="text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors flex items-center gap-1">
+            View all <UIcon name="i-heroicons-arrow-right" class="w-3 h-3" />
+          </NuxtLink>
         </div>
         <div v-if="recentUsers.length" class="divide-y divide-slate-50">
           <div v-for="u in recentUsers" :key="u.id" class="px-6 py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
@@ -82,9 +83,11 @@ const recentUsers = computed(() => [...users.value].reverse().slice(0, 5))
               <p class="font-bold text-slate-800 text-sm truncate">{{ u.name }}</p>
               <p class="text-xs text-slate-400 truncate">{{ u.email }}</p>
             </div>
-            <UBadge :class="u.role === 'admin' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'" variant="subtle" size="xs">
+            <span
+                :class="u.role === 'admin' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
+                class="text-xs font-bold px-2.5 py-1 rounded-lg">
               {{ u.role }}
-            </UBadge>
+            </span>
           </div>
         </div>
         <div v-else class="px-6 py-12 text-center">

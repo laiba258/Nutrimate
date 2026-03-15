@@ -1,24 +1,19 @@
 import { db } from '../../db/index'
 import { recipes, nutrition } from '../../db/schema'
-import { eq, lte, and, ilike } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
     const query = getQuery(event)
-
     const category = query.category as string | undefined
     const maxCalories = query.maxCalories ? Number(query.maxCalories) : undefined
     const maxTime = query.maxTime ? Number(query.maxTime) : undefined
     const search = query.search as string | undefined
 
-    const allRecipes = await db.select().from(recipes)
+    const allRecipes = await db.select().from(recipes).orderBy(recipes.createdAt)
 
     const recipeIds = allRecipes.map(r => r.id)
     const nutritionRows = recipeIds.length
-        ? await db.select().from(nutrition).where(
-            recipeIds.length === 1
-                ? eq(nutrition.recipeId, recipeIds[0]!)
-                : undefined
-        )
+        ? await db.select().from(nutrition).where(inArray(nutrition.recipeId, recipeIds))
         : []
 
     const nutritionMap = new Map(nutritionRows.map(n => [n.recipeId, n]))
@@ -29,7 +24,7 @@ export default defineEventHandler(async (event) => {
     }))
 
     if (category && category !== 'All') {
-        result = result.filter(r => r.costLevel === category || r.sustainabilityTip?.includes(category))
+        result = result.filter(r => r.category === category)
     }
     if (maxCalories) {
         result = result.filter(r => (r.nutrition?.calories ?? 0) <= maxCalories)

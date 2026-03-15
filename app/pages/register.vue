@@ -15,21 +15,14 @@ const loading = ref(false)
 
 async function submit() {
   error.value = ''
-  if (password.value !== confirm.value) {
-    error.value = 'Passwords do not match'
-    return
-  }
-  if (password.value.length < 6) {
-    error.value = 'Password must be at least 6 characters'
-    return
-  }
+  if (password.value !== confirm.value) { error.value = 'Passwords do not match'; return }
+  if (password.value.length < 6) { error.value = 'Password must be at least 6 characters'; return }
   loading.value = true
-  await new Promise(r => setTimeout(r, 300))
-  const result = register(name.value, email.value, password.value)
-  if (result.success) {
+  try {
+    await register(name.value, email.value, password.value)
     await navigateTo('/')
-  } else {
-    error.value = result.error ?? 'Registration failed'
+  } catch (e: any) {
+    error.value = e?.data?.message ?? 'Registration failed'
   }
   loading.value = false
 }

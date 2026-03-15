@@ -1,29 +1,26 @@
 import { db } from '../../db/index'
-import { userProfiles } from '../../db/schema'
+import { userProfiles, users } from '../../db/schema'
 import { eq } from 'drizzle-orm'
+import { requireAuth } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
-    const body = await readBody<{
-        name?: string
-        dailyCalorieGoal?: number
-        dietPreference?: string
-        id?: number
-    }>(event)
+    const session = requireAuth(event)
+    const body = await readBody<{ dailyCalorieGoal?: number; dietPreference?: string }>(event)
 
-    if (body.id) {
+    const existing = await db.select().from(userProfiles).where(eq(userProfiles.userId, session.id)).limit(1)
+
+    if (existing.length) {
         const [updated] = await db.update(userProfiles).set({
-            name: body.name,
-            dailyCalorieGoal: body.dailyCalorieGoal,
-            dietPreference: body.dietPreference,
-        }).where(eq(userProfiles.id, body.id)).returning()
+            dailyCalorieGoal: body.dailyCalorieGoal ?? null,
+            dietPreference: body.dietPreference ?? null,
+        }).where(eq(userProfiles.userId, session.id)).returning()
         return updated
     }
 
     const [created] = await db.insert(userProfiles).values({
-        name: body.name ?? null,
+        userId: session.id,
         dailyCalorieGoal: body.dailyCalorieGoal ?? null,
         dietPreference: body.dietPreference ?? null,
     }).returning()
-
     return created
 })
