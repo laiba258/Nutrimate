@@ -28,7 +28,7 @@
           </p>
 
           <div class="flex items-center gap-4 md:gap-6 pt-2 md:pt-4">
-            <NuxtLink to="/register" class="bg-[#10b981] hover:bg-[#059669] text-white px-7 md:px-9 py-3 md:py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-[0_20px_40px_-10px_rgba(16,185,129,0.4)] hover:-translate-y-1 active:scale-95">
+            <NuxtLink to="/register" class="bg-[#10b981] hover:bg-[#059669] text-white px-7 md:px-9 py-3 md:py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-[0_20px_40px_-10px_rgba(16_185_129_/_0.4)] hover:-translate-y-1 active:scale-95">
               Get Started
             </NuxtLink>
             

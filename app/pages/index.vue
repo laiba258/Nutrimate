@@ -262,7 +262,7 @@ const categories = [
 
     <!-- Floating filter button -->
     <div class="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-40">
-      <NuxtLink to="/recipe" class="group relative flex items-center justify-center w-14 h-14 bg-emerald-500 text-white rounded-full shadow-[0_20px_50px_rgba(16,185,129,0.3)] hover:scale-110 active:scale-95 transition-all">
+      <NuxtLink to="/recipe" class="group relative flex items-center justify-center w-14 h-14 bg-emerald-500 text-white rounded-full shadow-[0_20px_50px_rgba(16_185_129_/_0.3)] hover:scale-110 active:scale-95 transition-all">
         <div class="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-20 group-hover:hidden" />
         <UIcon name="i-heroicons-book-open-20-solid" class="w-6 h-6" />
         <span class="absolute -top-10 right-0 bg-slate-900 text-white px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all shadow-xl pointer-events-none whitespace-nowrap">Browse Recipes</span>
