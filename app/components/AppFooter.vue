@@ -63,8 +63,10 @@ const { isAdmin } = useAuth()
 
 const platformLinks = [
   { label: 'Browse Recipes', to: '/recipe' },
-  { label: 'Health Score', to: '/profile' },
   { label: 'Zero Waste Tips', to: '/zero-waste' },
+  { label: 'About Us', to: '/about' },
+  { label: 'Contact', to: '/contact' },
+  { label: 'Terms of Service', to: '/terms' },
   { label: 'Register', to: '/register' },
   { label: 'Login', to: '/login' },
 ]

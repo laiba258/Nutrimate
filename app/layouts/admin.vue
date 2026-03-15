@@ -30,7 +30,7 @@ watch(() => route.path, () => { sidebarOpen.value = false })
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 flex">
+  <div class="min-h-screen bg-slate-50 flex overflow-hidden">
 
     <!-- Mobile overlay -->
     <Transition name="fade">
@@ -120,7 +120,7 @@ watch(() => route.path, () => { sidebarOpen.value = false })
       </header>
 
       <!-- Page content -->
-      <main class="flex-1 p-4 md:p-8 min-w-0">
+      <main class="flex-1 p-4 md:p-8 min-w-0 overflow-x-hidden">
         <slot />
       </main>
     </div>
