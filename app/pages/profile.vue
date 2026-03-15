@@ -143,6 +143,8 @@ const { data: profile, refresh } = await useFetch<{
   id: number; name: string | null; dailyCalorieGoal: number | null; dietPreference: string | null
 } | null>('/api/profile', { lazy: true })
 
+const { data: recommended } = await useFetch<any[]>('/api/recipes/recommended', { lazy: true })
+
 const form = ref({
   name: profile.value?.name ?? '',
   dailyCalorieGoal: profile.value?.dailyCalorieGoal ?? 2000,
@@ -167,12 +169,12 @@ async function saveProfile() {
   saving.value = false
 }
 
-// Health metrics (static for now — extend with real tracking later)
-const metrics = ref([
-  { name: 'nutrition', label: 'Nutrition Quality', value: 85 },
+// Health metrics — nutrition quality based on whether user has set a calorie goal
+const metrics = computed(() => [
+  { name: 'nutrition', label: 'Nutrition Quality', value: profile.value?.dailyCalorieGoal ? 85 : 40 },
   { name: 'water', label: 'Hydration', value: 60 },
   { name: 'exercise', label: 'Physical Activity', value: 45 },
-  { name: 'sleep', label: 'Sleep Quality', value: 90 },
+  { name: 'sleep', label: 'Sleep Quality', value: 70 },
 ])
 
 const healthScore = computed(() => Math.round(metrics.value.reduce((a, m) => a + m.value, 0) / metrics.value.length))
@@ -195,4 +197,5 @@ const scoreStatus = computed(() => {
   return 'Needs Attention'
 })
 </script>
+
 

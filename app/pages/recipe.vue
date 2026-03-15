@@ -20,13 +20,15 @@ interface Recipe {
 const isFilterOpen = ref(false)
 const calorieLimit = ref(800)
 const selectedTime = ref('All')
-const selectedIngredients = ref<string[]>([])
+const selectedDiet = ref('All')
 const activeCategory = ref('All')
 const isDetailOpen = ref(false)
 const selectedRecipe = ref<Recipe | null>(null)
 const searchQuery = ref('')
+const ingredientSearch = ref('')
 
 const categories = ['All', 'Zero Waste', 'High Protein', 'Budget Friendly', 'Quick Fix', 'Vegan']
+const dietOptions = ['All', 'Weight Loss', 'Muscle Gain', 'Diabetic', 'Vegan', 'Keto', 'Balanced']
 
 const queryParams = computed(() => {
   const p: Record<string, string> = {}
@@ -34,6 +36,8 @@ const queryParams = computed(() => {
   if (calorieLimit.value < 800) p.maxCalories = String(calorieLimit.value)
   if (selectedTime.value !== 'All') p.maxTime = selectedTime.value
   if (searchQuery.value) p.search = searchQuery.value
+  if (ingredientSearch.value) p.ingredient = ingredientSearch.value
+  if (selectedDiet.value !== 'All') p.diet = selectedDiet.value
   return p
 })
 
@@ -43,25 +47,12 @@ const { data: recipes } = await useFetch<Recipe[]>('/api/recipes', {
 })
 
 const filteredRecipes = computed(() => {
-  if (!recipes.value) return []
-  if (selectedIngredients.value.length === 0) return recipes.value
-  return recipes.value.filter(r =>
-    selectedIngredients.value.some(ing =>
-      r.title.toLowerCase().includes(ing.toLowerCase()) ||
-      r.sustainabilityTip?.toLowerCase().includes(ing.toLowerCase())
-    )
-  )
+  return recipes.value ?? []
 })
 
 function openRecipeDetail(recipe: Recipe) {
   selectedRecipe.value = recipe
   isDetailOpen.value = true
-}
-
-function toggleIngredient(ing: string) {
-  const index = selectedIngredients.value.indexOf(ing)
-  if (index > -1) selectedIngredients.value.splice(index, 1)
-  else selectedIngredients.value.push(ing)
 }
 
 onMounted(() => {
@@ -114,6 +105,18 @@ const detailRecipe = computed(() => {
             </div>
 
             <div class="space-y-4">
+              <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Diet Preference</p>
+              <div class="grid grid-cols-2 gap-2">
+                <button v-for="d in dietOptions" :key="d"
+                  :class="[selectedDiet === d ? 'bg-slate-900 text-white shadow-xl' : 'bg-white border text-slate-500']"
+                  class="py-3 rounded-2xl text-[10px] font-black uppercase transition-all"
+                  @click="selectedDiet = d">
+                  {{ d }}
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-4">
               <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Preparation Time</p>
               <div class="grid grid-cols-2 gap-2">
                 <button v-for="t in ['All', '10', '20', '30']" :key="t"
@@ -126,21 +129,23 @@ const detailRecipe = computed(() => {
             </div>
 
             <div class="space-y-4">
-              <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Key Ingredients</p>
-              <div class="flex flex-wrap gap-2">
-                <button v-for="ing in ['Avocado', 'Spinach', 'Chicken', 'Pasta', 'Salmon', 'Lentils']" :key="ing"
-                  :class="[selectedIngredients.includes(ing) ? 'bg-emerald-500 text-white' : 'bg-white border']"
-                  class="px-4 py-2 rounded-full text-[10px] font-bold transition-all"
-                  @click="toggleIngredient(ing)">
-                  {{ ing }}
-                </button>
-              </div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Search by Ingredient</p>
+              <input
+                v-model="ingredientSearch"
+                type="text"
+                placeholder="e.g. chicken, spinach, rice..."
+                class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 text-sm outline-none focus:border-emerald-400 bg-white"
+              >
+              <p class="text-xs text-slate-400 ml-1">Finds recipes containing this ingredient</p>
             </div>
           </div>
 
-          <div class="p-8 bg-white border-t">
+          <div class="p-8 bg-white border-t space-y-3">
             <button class="w-full bg-emerald-500 hover:bg-slate-900 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all" @click="isFilterOpen = false">
               Show Results
+            </button>
+            <button class="w-full text-slate-400 text-xs font-bold uppercase tracking-widest py-2" @click="selectedDiet='All'; calorieLimit=800; selectedTime='All'; ingredientSearch=''">
+              Clear All Filters
             </button>
           </div>
         </div>

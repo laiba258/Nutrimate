@@ -9,10 +9,23 @@ interface Recipe {
   nutrition: { calories: number; protein: number; carbs: number; fat: number } | null
 }
 
-const { data: allRecipes } = await useFetch<Recipe[]>('/api/recipes', { lazy: true })
+const { user } = useAuth()
 
-const featuredRecipes = computed(() =>
-  (allRecipes.value ?? []).slice(0, 3).map(r => ({
+const { data: allRecipes } = await useFetch<Recipe[]>('/api/recipes', { lazy: true })
+const { data: recommended } = await useFetch<Recipe[]>('/api/recipes/recommended', { lazy: true })
+
+// Trending = last 6 added (reversed)
+const trendingRecipes = computed(() =>
+  [...(allRecipes.value ?? [])].reverse().slice(0, 6).map(toCard)
+)
+
+const recommendedRecipes = computed(() =>
+  (recommended.value ?? []).map(toCard)
+)
+
+function toCard(r: Recipe) {
+  return {
+    id: r.id,
     title: r.title,
     image: r.imageUrl ?? 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500',
     badge: r.isZeroWaste ? 'Zero Waste' : (r.costLevel ?? 'Healthy'),
@@ -20,8 +33,8 @@ const featuredRecipes = computed(() =>
     calories: r.nutrition?.calories ?? null,
     protein: r.nutrition?.protein ?? null,
     cookingTime: r.cookingTime,
-  }))
-)
+  }
+}
 
 const stats = [
   { value: '500+', label: 'Healthy Recipes' },
@@ -155,46 +168,63 @@ const categories = [
       </div>
     </section>
 
-    <!-- Featured Recipes -->
+    <!-- Trending Recipes -->
     <section class="max-w-7xl mx-auto px-4 md:px-6 pb-20 md:pb-24">
       <div class="bg-white rounded-[2.5rem] md:rounded-[4rem] border border-slate-100 shadow-sm p-8 md:p-16 relative overflow-hidden">
         <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-50/60 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none" />
-
         <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4 relative z-10">
           <div class="space-y-3">
-            <p class="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Curated for You</p>
-            <h2 class="text-4xl font-black text-slate-900 tracking-tighter leading-none">Smart Picks.</h2>
+            <p class="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">🔥 Trending Now</p>
+            <h2 class="text-4xl font-black text-slate-900 tracking-tighter leading-none">Most Recent Picks.</h2>
           </div>
           <NuxtLink to="/recipe" class="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 transition-colors flex items-center gap-1 shrink-0">
-            View All Recipes <UIcon name="i-heroicons-arrow-right-20-solid" class="w-3 h-3" />
+            View All <UIcon name="i-heroicons-arrow-right-20-solid" class="w-3 h-3" />
           </NuxtLink>
         </div>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
           <template v-if="!allRecipes">
             <div v-for="i in 3" :key="i" class="animate-pulse bg-slate-50 rounded-[2rem] p-4">
               <div class="h-48 rounded-[1.5rem] bg-slate-100 mb-4" />
-              <div class="space-y-2 px-2">
-                <div class="h-4 bg-slate-100 rounded w-3/4" />
-                <div class="h-3 bg-slate-100 rounded w-1/2" />
-              </div>
+              <div class="space-y-2 px-2"><div class="h-4 bg-slate-100 rounded w-3/4" /><div class="h-3 bg-slate-100 rounded w-1/2" /></div>
             </div>
           </template>
-          <template v-else-if="featuredRecipes.length === 0">
-            <div class="col-span-3 text-center py-16">
-              <p class="text-slate-400 font-medium">No recipes yet. <NuxtLink to="/admin/recipes" class="text-emerald-500 font-bold">Add some from the dashboard.</NuxtLink></p>
+          <RecipePreviewCard v-else v-for="recipe in trendingRecipes.slice(0,3)" :key="recipe.id"
+            :title="recipe.title" :image="recipe.image" :badge-text="recipe.badge" :badge-color="recipe.badgeColor"
+            :macros="[{ label: 'Kcal', value: String(recipe.calories ?? '—') }, { label: 'Protein', value: recipe.protein ? recipe.protein + 'g' : '—' }, { label: 'Time', value: recipe.cookingTime ? recipe.cookingTime + ' min' : '—' }]"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Personalized Recommendations -->
+    <section class="max-w-7xl mx-auto px-4 md:px-6 pb-20 md:pb-24">
+      <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2.5rem] md:rounded-[4rem] p-8 md:p-16 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[100px] -mr-32 -mt-32 pointer-events-none" />
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4 relative z-10">
+          <div class="space-y-3">
+            <p class="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-400">✨ Personalized For You</p>
+            <h2 class="text-4xl font-black text-white tracking-tighter leading-none">
+              {{ user ? 'Your Smart Picks.' : 'Recommended Recipes.' }}
+            </h2>
+            <p class="text-slate-400 text-sm">{{ user ? 'Based on your diet preference and calorie goal.' : 'Log in to get recipes tailored to your goals.' }}</p>
+          </div>
+          <NuxtLink v-if="!user" to="/login" class="shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
+            Log In
+          </NuxtLink>
+          <NuxtLink v-else to="/profile" class="shrink-0 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-400 transition-colors flex items-center gap-1">
+            Edit Preferences <UIcon name="i-heroicons-arrow-right-20-solid" class="w-3 h-3" />
+          </NuxtLink>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+          <template v-if="!recommended">
+            <div v-for="i in 3" :key="i" class="animate-pulse bg-white/5 rounded-[2rem] p-4">
+              <div class="h-48 rounded-[1.5rem] bg-white/10 mb-4" />
+              <div class="space-y-2 px-2"><div class="h-4 bg-white/10 rounded w-3/4" /><div class="h-3 bg-white/10 rounded w-1/2" /></div>
             </div>
           </template>
-          <RecipePreviewCard v-else v-for="recipe in featuredRecipes" :key="recipe.title"
-            :title="recipe.title"
-            :image="recipe.image"
-            :badge-text="recipe.badge"
-            :badge-color="recipe.badgeColor"
-            :macros="[
-              { label: 'Kcal', value: String(recipe.calories ?? '—') },
-              { label: 'Protein', value: recipe.protein ? recipe.protein + 'g' : '—' },
-              { label: 'Time', value: recipe.cookingTime ? recipe.cookingTime + ' min' : '—' },
-            ]"
+          <RecipePreviewCard v-else v-for="recipe in recommendedRecipes.slice(0,3)" :key="recipe.id"
+            :title="recipe.title" :image="recipe.image" :badge-text="recipe.badge" :badge-color="recipe.badgeColor"
+            :macros="[{ label: 'Kcal', value: String(recipe.calories ?? '—') }, { label: 'Protein', value: recipe.protein ? recipe.protein + 'g' : '—' }, { label: 'Time', value: recipe.cookingTime ? recipe.cookingTime + ' min' : '—' }]"
           />
         </div>
       </div>

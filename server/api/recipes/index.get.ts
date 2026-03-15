@@ -34,7 +34,33 @@ export default defineEventHandler(async (event) => {
     }
     if (search) {
         const s = search.toLowerCase()
-        result = result.filter(r => r.title.toLowerCase().includes(s))
+        result = result.filter(r =>
+            r.title.toLowerCase().includes(s) ||
+            (r.ingredients ?? '').toLowerCase().includes(s) ||
+            (r.description ?? '').toLowerCase().includes(s)
+        )
+    }
+
+    // ingredient filter (comma-separated list)
+    const ingredientFilter = query.ingredient as string | undefined
+    if (ingredientFilter) {
+        const ings = ingredientFilter.split(',').map(i => i.trim().toLowerCase()).filter(Boolean)
+        result = result.filter(r =>
+            ings.some(ing => (r.ingredients ?? '').toLowerCase().includes(ing))
+        )
+    }
+
+    // diet preference filter
+    const diet = query.diet as string | undefined
+    const dietMap: Record<string, string[]> = {
+        'Weight Loss': ['Budget Friendly', 'Quick Fix', 'Vegan'],
+        'Muscle Gain': ['High Protein'],
+        'Diabetic': ['Vegan', 'High Protein'],
+        'Vegan': ['Vegan', 'Zero Waste'],
+        'Keto': ['High Protein'],
+    }
+    if (diet && dietMap[diet]) {
+        result = result.filter(r => dietMap[diet].includes(r.category ?? ''))
     }
 
     return result
