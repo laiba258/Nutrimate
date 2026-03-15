@@ -1,9 +1,7 @@
 <template>
-  <div class="min-h-screen bg-white">
-    <AppHeader />
-
+  <div>
     <!-- Hero -->
-    <section class="bg-gradient-to-br from-slate-900 to-slate-800 pt-28 pb-16 px-4 text-center">
+    <section class="bg-gradient-to-br from-slate-900 to-slate-800 pt-16 pb-16 px-4 text-center">
       <div class="max-w-2xl mx-auto">
         <span class="inline-block bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6">Get In Touch</span>
         <h1 class="text-4xl md:text-5xl font-black text-white tracking-tighter mb-4">We'd love to hear from you</h1>
@@ -82,11 +80,11 @@
       </div>
     </section>
 
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: 'public' })
 useSeoMeta({ title: 'Contact — NutriMate', description: 'Get in touch with the NutriMate team.' })
 
 const sent = ref(false)

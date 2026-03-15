@@ -1,8 +1,6 @@
 <template>
-  <div class="min-h-screen bg-white">
-    <AppHeader />
-
-    <section class="bg-gradient-to-br from-slate-900 to-slate-800 pt-28 pb-16 px-4 text-center">
+  <div>
+    <section class="bg-gradient-to-br from-slate-900 to-slate-800 pt-16 pb-16 px-4 text-center">
       <div class="max-w-2xl mx-auto">
         <span class="inline-block bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6">Legal</span>
         <h1 class="text-4xl md:text-5xl font-black text-white tracking-tighter mb-4">Terms of Service</h1>
@@ -36,11 +34,11 @@
       </div>
     </section>
 
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: 'public' })
 useSeoMeta({ title: 'Terms of Service — NutriMate', description: 'NutriMate terms of service and usage policy.' })
 
 const sections = [
@@ -114,3 +112,4 @@ const sections = [
   },
 ]
 </script>
+

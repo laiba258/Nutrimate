@@ -1,9 +1,6 @@
 <template>
-  <div class="min-h-screen bg-white">
-    <AppHeader />
-
-    <!-- Hero -->
-    <section class="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-28 pb-20 px-4 text-center relative overflow-hidden">
+  <div>
+    <section class="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 pt-16 pb-20 px-4 text-center relative overflow-hidden">
       <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle at 30% 50%, #10b981 0%, transparent 60%), radial-gradient(circle at 70% 20%, #14b8a6 0%, transparent 50%)" />
       <div class="relative z-10 max-w-3xl mx-auto">
         <span class="inline-block bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6">Our Story</span>
@@ -94,13 +91,12 @@
         </div>
       </div>
     </section>
-
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
 useSeoMeta({ title: 'About — NutriMate', description: 'Learn about NutriMate\'s mission to make healthy, affordable, sustainable eating accessible to everyone.' })
+definePageMeta({ layout: 'public' })
 
 const stats = [
   { value: '30+', label: 'Recipes', desc: 'Curated healthy meals' },
