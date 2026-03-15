@@ -102,7 +102,7 @@ const recentUsers = computed(() => [...(users.value ?? [])].reverse().slice(0, 5
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <NuxtLink
           v-for="action in [
-            { label: 'Add Recipe', icon: 'i-heroicons-plus-circle', to: '/admin/recipes?add=true', color: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' },
+            { label: 'Manage Recipes', icon: 'i-heroicons-book-open', to: '/admin/recipes', color: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' },
             { label: 'Manage Users', icon: 'i-heroicons-users', to: '/admin/users', color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
             { label: 'Add Tip', icon: 'i-heroicons-light-bulb', to: '/admin/tips?add=true', color: 'bg-teal-50 text-teal-600 hover:bg-teal-100' },
             { label: 'Settings', icon: 'i-heroicons-cog-6-tooth', to: '/admin/settings', color: 'bg-slate-50 text-slate-600 hover:bg-slate-100' },
