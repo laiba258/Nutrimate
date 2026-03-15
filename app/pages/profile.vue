@@ -107,7 +107,7 @@
           </div>
           <div class="flex gap-3 justify-end">
             <UButton color="gray" variant="ghost" label="Cancel" @click="isEditing = false" />
-            <UButton type="submit" color="emerald" :loading="saving" label="Save Profile" />
+            <UButton type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-white" :loading="saving" label="Save Profile" />
           </div>
         </form>
       </div>

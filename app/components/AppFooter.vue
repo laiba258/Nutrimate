@@ -34,8 +34,8 @@
     <div class="max-w-7xl mx-auto border-t border-slate-800 mt-20 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
       <p class="text-slate-500 font-medium">© 2026 NutriMate Project. All Rights Reserved.</p>
       <div class="flex items-center gap-4">
-        <UBadge color="emerald" variant="subtle" class="px-3 py-1">SDG 2: Zero Hunger</UBadge>
-        <UBadge color="teal" variant="subtle" class="px-3 py-1">SDG 12: Responsible Consumption</UBadge>
+        <UBadge color="emerald" variant="subtle" class="bg-emerald-100 text-emerald-700 px-3 py-1">SDG 2: Zero Hunger</UBadge>
+        <UBadge color="teal" variant="subtle" class="bg-teal-100 text-teal-700 px-3 py-1">SDG 12: Responsible Consumption</UBadge>
       </div>
     </div>
   </footer>

@@ -57,7 +57,7 @@ function clearData(key: string, label: string) {
         </UFormGroup>
       </div>
       <div class="flex justify-end">
-        <UButton color="emerald" label="Save Profile" @click="saveProfile" />
+        <UButton class="bg-emerald-500 hover:bg-emerald-600 text-white" label="Save Profile" @click="saveProfile" />
       </div>
     </div>
 
@@ -73,7 +73,7 @@ function clearData(key: string, label: string) {
         </UFormGroup>
       </div>
       <div class="flex justify-end">
-        <UButton color="emerald" label="Update Password" @click="changePassword" />
+        <UButton class="bg-emerald-500 hover:bg-emerald-600 text-white" label="Update Password" @click="changePassword" />
       </div>
     </div>
 
@@ -87,7 +87,7 @@ function clearData(key: string, label: string) {
           { key: 'nutrimate_categories', label: 'All Categories' },
         ]" :key="item.key" class="flex items-center justify-between p-4 rounded-xl bg-red-50 border border-red-100">
           <p class="text-sm font-semibold text-slate-700">Clear {{ item.label }}</p>
-          <UButton color="red" variant="soft" size="xs" :label="`Clear ${item.label}`" @click="clearData(item.key, item.label)" />
+          <UButton class="bg-red-500 hover:bg-red-600 text-white" variant="soft" size="xs" :label="`Clear ${item.label}`" @click="clearData(item.key, item.label)" />
         </div>
       </div>
     </div>

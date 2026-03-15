@@ -56,16 +56,16 @@ function remove(id: string) {
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
               <p class="font-bold text-slate-800">{{ u.name }}</p>
-              <UBadge v-if="u.id === currentUser?.id" color="blue" variant="subtle" size="xs">You</UBadge>
+              <UBadge v-if="u.id === currentUser?.id" class="bg-blue-100 text-blue-600" variant="subtle" size="xs">You</UBadge>
             </div>
             <p class="text-sm text-slate-400 truncate">{{ u.email }}</p>
             <p class="text-xs text-slate-300 mt-0.5">Joined {{ new Date(u.createdAt).toLocaleDateString() }}</p>
           </div>
-          <UBadge :color="u.role === 'admin' ? 'emerald' : 'slate'" variant="subtle">{{ u.role }}</UBadge>
+          <UBadge :class="u.role === 'admin' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'" variant="subtle">{{ u.role }}</UBadge>
           <div class="flex gap-2">
             <UButton
               size="xs"
-              :color="u.role === 'admin' ? 'orange' : 'emerald'"
+              :class="u.role === 'admin' ? 'bg-orange-100 text-orange-600 hover:bg-orange-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'"
               variant="soft"
               :label="u.role === 'admin' ? 'Make User' : 'Make Admin'"
               :disabled="u.id === currentUser?.id"
@@ -73,7 +73,7 @@ function remove(id: string) {
             />
             <UButton
               size="xs"
-              color="red"
+              class="text-red-500 hover:bg-red-50"
               variant="ghost"
               icon="i-heroicons-trash"
               :disabled="u.id === currentUser?.id"

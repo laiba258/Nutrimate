@@ -3,9 +3,9 @@
     <div class="relative h-48 w-full overflow-hidden rounded-[1.5rem] mb-4">
       <img :src="image" :alt="title" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110">
       <div class="absolute top-3 right-3">
-        <UBadge :color="badgeColor" variant="solid" class="rounded-full px-3 py-1 text-[10px] font-bold shadow-lg">
+        <span :class="badgeClass" class="rounded-full px-3 py-1 text-[10px] font-bold shadow-lg">
           {{ badgeText }}
-        </UBadge>
+        </span>
       </div>
     </div>
 
@@ -29,11 +29,17 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   title: string
   image: string
   badgeText: string
   badgeColor: string
   macros: { label: string; value: string }[]
 }>()
+
+const badgeClass = computed(() => ({
+  'bg-teal-500 text-white': props.badgeColor === 'teal',
+  'bg-emerald-500 text-white': props.badgeColor === 'emerald',
+  'bg-blue-500 text-white': props.badgeColor === 'blue',
+}))
 </script>

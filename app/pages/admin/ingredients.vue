@@ -37,7 +37,7 @@ function remove(ing: string) {
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
       <div class="flex gap-3">
         <UInput v-model="newIng" placeholder="Add new ingredient..." class="flex-1" @keyup.enter="add" />
-        <UButton color="emerald" icon="i-heroicons-plus" label="Add" @click="add" />
+        <UButton class="bg-emerald-500 hover:bg-emerald-600 text-white" icon="i-heroicons-plus" label="Add" @click="add" />
       </div>
       <UInput v-model="search" icon="i-heroicons-magnifying-glass" placeholder="Search ingredients..." />
       <div class="flex flex-wrap gap-2 pt-2">

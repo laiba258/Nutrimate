@@ -56,7 +56,7 @@ const recentUsers = computed(() => [...users.value].reverse().slice(0, 5))
               <p class="font-bold text-slate-800 text-sm truncate">{{ r.title }}</p>
               <p class="text-xs text-slate-400">{{ r.costLevel ?? '—' }} · {{ r.cookingTime ? r.cookingTime + ' min' : '—' }}</p>
             </div>
-            <UBadge :color="r.isZeroWaste ? 'teal' : 'slate'" variant="subtle" size="xs">
+            <UBadge :class="r.isZeroWaste ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-500'" variant="subtle" size="xs">
               {{ r.isZeroWaste ? 'Zero Waste' : r.costLevel ?? '—' }}
             </UBadge>
           </div>
@@ -82,7 +82,7 @@ const recentUsers = computed(() => [...users.value].reverse().slice(0, 5))
               <p class="font-bold text-slate-800 text-sm truncate">{{ u.name }}</p>
               <p class="text-xs text-slate-400 truncate">{{ u.email }}</p>
             </div>
-            <UBadge :color="u.role === 'admin' ? 'emerald' : 'slate'" variant="subtle" size="xs">
+            <UBadge :class="u.role === 'admin' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'" variant="subtle" size="xs">
               {{ u.role }}
             </UBadge>
           </div>

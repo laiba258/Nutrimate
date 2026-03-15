@@ -32,7 +32,7 @@ function remove(cat: string) {
       <h3 class="font-black text-slate-900 tracking-tighter">Recipe Categories</h3>
       <div class="flex gap-3">
         <UInput v-model="newCat" placeholder="New category name..." class="flex-1" @keyup.enter="add" />
-        <UButton color="emerald" icon="i-heroicons-plus" label="Add" @click="add" />
+        <UButton class="bg-emerald-500 hover:bg-emerald-600 text-white" icon="i-heroicons-plus" label="Add" @click="add" />
       </div>
       <div class="space-y-2">
         <div
@@ -43,7 +43,7 @@ function remove(cat: string) {
             <div class="w-2 h-2 rounded-full bg-emerald-400" />
             <span class="font-semibold text-slate-700 text-sm">{{ cat }}</span>
           </div>
-          <UButton color="red" variant="ghost" icon="i-heroicons-trash" size="xs" @click="remove(cat)" />
+          <UButton class="text-red-500 hover:bg-red-50" variant="ghost" icon="i-heroicons-trash" size="xs" @click="remove(cat)" />
         </div>
       </div>
     </div>
