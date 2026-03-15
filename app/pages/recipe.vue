@@ -24,6 +24,7 @@ const selectedIngredients = ref<string[]>([])
 const activeCategory = ref('All')
 const isDetailOpen = ref(false)
 const selectedRecipe = ref<Recipe | null>(null)
+const searchQuery = ref('')
 
 const categories = ['All', 'Zero Waste', 'High Protein', 'Budget Friendly', 'Quick Fix', 'Vegan']
 
@@ -32,6 +33,7 @@ const queryParams = computed(() => {
   if (activeCategory.value !== 'All') p.category = activeCategory.value
   if (calorieLimit.value < 800) p.maxCalories = String(calorieLimit.value)
   if (selectedTime.value !== 'All') p.maxTime = selectedTime.value
+  if (searchQuery.value) p.search = searchQuery.value
   return p
 })
 
@@ -64,6 +66,7 @@ function toggleIngredient(ing: string) {
 
 onMounted(() => {
   if (route.query.openFilter === 'true') isFilterOpen.value = true
+  if (route.query.search) searchQuery.value = String(route.query.search)
 })
 
 const detailRecipe = computed(() => {
@@ -167,9 +170,15 @@ const detailRecipe = computed(() => {
             {{ cat }}
           </button>
         </div>
-        <button class="shrink-0 flex items-center gap-2 px-5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-500 hover:border-emerald-400 hover:text-emerald-600 transition-all" @click="isFilterOpen = true">
-          <UIcon name="i-heroicons-adjustments-horizontal" class="w-4 h-4" /> Filters
-        </button>
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 focus-within:border-emerald-400 transition-colors">
+            <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 text-slate-400 shrink-0" />
+            <input v-model="searchQuery" type="text" placeholder="Search recipes..." class="text-sm outline-none text-slate-700 placeholder-slate-400 w-40 bg-transparent">
+          </div>
+          <button class="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-500 hover:border-emerald-400 hover:text-emerald-600 transition-all" @click="isFilterOpen = true">
+            <UIcon name="i-heroicons-adjustments-horizontal" class="w-4 h-4" /> Filters
+          </button>
+        </div>
       </div>
     </div>
 

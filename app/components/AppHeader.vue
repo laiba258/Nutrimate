@@ -1,6 +1,9 @@
 <script setup lang="ts">
 const { user, isAdmin, isLoggedIn, logout } = useAuth()
 const mobileMenuOpen = ref(false)
+const searchOpen = ref(false)
+const searchQuery = ref('')
+const router = useRouter()
 
 const navLinks = [
   { label: 'Home', to: '/' },
@@ -13,6 +16,14 @@ async function handleLogout() {
   mobileMenuOpen.value = false
   await logout()
   navigateTo('/')
+}
+
+function submitSearch() {
+  if (!searchQuery.value.trim()) return
+  router.push({ path: '/recipe', query: { search: searchQuery.value.trim() } })
+  searchQuery.value = ''
+  searchOpen.value = false
+  mobileMenuOpen.value = false
 }
 </script>
 
@@ -46,6 +57,19 @@ async function handleLogout() {
 
       <!-- Desktop Right actions -->
       <div class="hidden lg:flex items-center gap-3">
+        <!-- Search -->
+        <div class="relative">
+          <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0 w-0" enter-to-class="opacity-100 w-48" leave-active-class="transition-all duration-150" leave-from-class="opacity-100 w-48" leave-to-class="opacity-0 w-0">
+            <form v-if="searchOpen" class="flex items-center" @submit.prevent="submitSearch">
+              <input v-model="searchQuery" type="text" placeholder="Search recipes..." autofocus
+                class="w-48 px-4 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-emerald-400 bg-white"
+                @blur="!searchQuery && (searchOpen = false)">
+            </form>
+          </Transition>
+          <button class="p-2 rounded-xl hover:bg-slate-100 transition-all text-slate-500 hover:text-emerald-600" @click="searchOpen ? submitSearch() : (searchOpen = true)">
+            <UIcon name="i-heroicons-magnifying-glass" class="w-5 h-5" />
+          </button>
+        </div>
         <template v-if="!isLoggedIn">
           <NuxtLink to="/login" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors px-3 py-2">Sign In</NuxtLink>
           <NuxtLink to="/register" class="bg-slate-900 hover:bg-emerald-600 text-white rounded-full px-5 py-2 font-black text-xs uppercase tracking-wider transition-all">
@@ -109,7 +133,14 @@ async function handleLogout() {
       leave-to-class="opacity-0 -translate-y-2"
     >
       <div v-if="mobileMenuOpen" class="lg:hidden mt-2 max-w-7xl mx-auto glass-effect rounded-2xl shadow-lg overflow-hidden">
-        <div class="px-4 py-4 space-y-1">
+        <!-- Mobile search -->
+        <div class="px-4 pt-4">
+          <form class="flex items-center gap-2 bg-slate-50 rounded-xl px-4 py-2.5 border border-slate-200" @submit.prevent="submitSearch">
+            <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 text-slate-400 shrink-0" />
+            <input v-model="searchQuery" type="text" placeholder="Search recipes..." class="flex-1 bg-transparent text-sm outline-none text-slate-700 placeholder-slate-400">
+          </form>
+        </div>
+        <div class="px-4 py-3 space-y-1">
           <NuxtLink
             v-for="link in navLinks"
             :key="link.to"

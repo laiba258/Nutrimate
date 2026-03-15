@@ -113,26 +113,24 @@ const categories = [
     </section>
 
     <!-- Features Grid -->
-    <section class="bg-slate-900 py-20 md:py-32 relative overflow-hidden">
-      <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
-      <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[100px] pointer-events-none" />
-
+    <section class="bg-slate-50 py-20 md:py-32 relative overflow-hidden">
       <div class="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
         <div class="text-center mb-16 space-y-4">
-          <p class="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-400">Everything You Need</p>
-          <h2 class="text-4xl md:text-5xl font-black text-white tracking-tighter">
-            Built for <span class="text-emerald-400 italic font-serif font-light">Real Life.</span>
+          <p class="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Everything You Need</p>
+          <h2 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter">
+            Built for <span class="text-emerald-500 italic font-serif font-light">Real Life.</span>
           </h2>
+          <p class="text-slate-400 text-sm max-w-md mx-auto">Everything you need to eat smarter, waste less, and feel better — in one place.</p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div v-for="feature in features" :key="feature.title"
-            class="bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-500 group">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors duration-500">
-              <UIcon :name="feature.icon" class="w-6 h-6 text-emerald-400 group-hover:text-white transition-colors duration-500" />
+            class="bg-white border border-slate-100 rounded-[2rem] p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors duration-500">
+              <UIcon :name="feature.icon" class="w-6 h-6 text-emerald-500 group-hover:text-white transition-colors duration-500" />
             </div>
-            <h3 class="text-lg font-black text-white tracking-tighter mb-3">{{ feature.title }}</h3>
-            <p class="text-sm text-slate-400 leading-relaxed">{{ feature.description }}</p>
+            <h3 class="text-lg font-black text-slate-900 tracking-tighter mb-3">{{ feature.title }}</h3>
+            <p class="text-sm text-slate-500 leading-relaxed">{{ feature.description }}</p>
           </div>
         </div>
       </div>
@@ -214,7 +212,7 @@ const categories = [
           <div class="absolute -top-10 -left-10 w-32 h-32 bg-white/5 rounded-full" />
           <div class="relative z-10 space-y-6">
             <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
-              <UIcon name="i-heroicons-leaf" class="w-7 h-7 text-white" />
+              <span class="text-3xl">🌿</span>
             </div>
             <div>
               <h3 class="text-3xl font-black text-white tracking-tighter leading-tight">Zero Waste<br>Kitchen Tips</h3>
@@ -230,7 +228,7 @@ const categories = [
           <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-emerald-500/10 rounded-full" />
           <div class="relative z-10 space-y-6">
             <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-              <UIcon name="i-heroicons-heart" class="w-7 h-7 text-emerald-400" />
+              <span class="text-3xl">❤️</span>
             </div>
             <div>
               <h3 class="text-3xl font-black text-white tracking-tighter leading-tight">Your Personal<br>Health Score</h3>

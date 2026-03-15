@@ -48,28 +48,31 @@ onMounted(fetchIngredients)
         <input
           v-model="newIng"
           placeholder="Add new ingredient..."
-          class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white"
+          class="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 placeholder-slate-400 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white"
           @keyup.enter="add"
         >
         <button
-          class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all"
+          class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all shrink-0"
           @click="add"
         >
           <UIcon name="i-heroicons-plus" class="w-4 h-4" /> Add
         </button>
       </div>
-      <input
-        v-model="search"
-        placeholder="Search ingredients..."
-        class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 bg-white"
-      >
+      <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus-within:border-emerald-400 transition-colors">
+        <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 text-slate-400 shrink-0" />
+        <input
+          v-model="search"
+          placeholder="Search ingredients..."
+          class="flex-1 text-sm font-medium text-slate-800 placeholder-slate-400 outline-none bg-transparent"
+        >
+      </div>
       <div class="flex flex-wrap gap-2 pt-2">
         <div
           v-for="ing in filtered" :key="ing.id"
-          class="flex items-center gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full text-sm font-semibold"
+          class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1.5 rounded-full text-sm font-semibold"
         >
           {{ ing.name }}
-          <button class="hover:text-red-500 transition-colors font-black text-base leading-none" @click="remove(ing)">×</button>
+          <button class="hover:text-red-500 transition-colors font-black text-base leading-none ml-1" @click="remove(ing)">×</button>
         </div>
         <div v-if="!filtered.length" class="text-slate-400 text-sm py-4 w-full text-center">No ingredients found.</div>
       </div>
