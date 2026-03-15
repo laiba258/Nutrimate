@@ -30,7 +30,7 @@ watch(() => route.path, () => { sidebarOpen.value = false })
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 flex overflow-x-hidden">
+  <div class="min-h-screen bg-slate-50 flex">
 
     <!-- Mobile overlay -->
     <Transition name="fade">
