@@ -10,7 +10,7 @@
  }
 
  .bento-card {
-   @apply transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(16, 185, 129, 0.1)];
+   @apply transition-all duration-500 hover:scale-[1.02] hover:shadow-emerald-100;
  }
 
  @keyframes float {
